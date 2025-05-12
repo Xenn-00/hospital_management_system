@@ -1,0 +1,65 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:latest
+    container_name: db
+    environment:
+      - POSTGRES_USER=rust_user
+      - POSTGRES_PASSWORD=06b631564ed5cde5053e855c9e94220c
+      - POSTGRES_DB=hms_db
+    networks:
+      - shared
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "rust_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgbouncer:
+    container_name: pgbouncer
+    image: edoburu/pgbouncer:latest
+    networks:
+      - shared
+    environment:
+      - DB_USER=rust_user
+      - DB_PASSWORD=06b631564ed5cde5053e855c9e94220c
+      - DB_HOST=db
+      - POOL_MODE=transaction
+      - MAX_CLIENT_CONN=20
+      - DEFAULT_POOL_SIZE=5
+    ports:
+      - "6432:6432"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini
+      - ./userlist.txt:/etc/pgbouncer/userlist.txt
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "pg_isready",
+          "-U",
+          "rust_user",
+          "-h",
+          "localhost",
+          "-p",
+          "6432",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
+
+networks:
+  shared:
+    name: shared
+    external: false

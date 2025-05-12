@@ -1,0 +1,38 @@
+appenders:
+  stdout:
+    kind: console
+    encoder:
+      pattern: "{d} {l} {t} - {m}{n}"
+  app_file:
+    kind: file
+    path: "logs/application.log"
+    append: true
+    encoder:
+      pattern: "{d} {l} {t} - {m}{n}"
+  error_file:
+    kind: file
+    path: "logs/error.log"
+    append: true
+    encoder:
+      pattern: "{d} {l} {t} - {m}{n}"
+
+root:
+  level: info
+  appenders:
+    - stdout
+    - app_file
+    - error_file
+
+loggers:
+  migration:
+    level: debug
+    appenders:
+      - stdout
+      - app_file
+    additive: false
+  hospital_management_system:
+    level: info
+    appenders:
+      - stdout
+      - app_file
+    additive: false

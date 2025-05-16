@@ -24,15 +24,9 @@ root:
     - error_file
 
 loggers:
-  migration:
-    level: debug
-    appenders:
-      - stdout
-      - app_file
-    additive: false
-  hospital_management_system:
-    level: info
-    appenders:
-      - stdout
-      - app_file
-    additive: false
+  sqlx::query:
+    level: warn
+  sea_orm:
+    level: warn
+  sea_orm::database:
+    level: warn

@@ -1,5 +1,6 @@
 use config::{Config, ConfigError, File};
 use serde::{Deserialize, de::DeserializeOwned};
+use tokio::task_local;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct AppConfig {
@@ -7,6 +8,8 @@ pub struct AppConfig {
     pub version: String,
     pub description: String,
     pub database: DatabaseConfig,
+    pub redis: RedisConfig,
+    pub app: Application,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -14,6 +17,18 @@ pub struct DatabaseConfig {
     pub url: String,
     pub driver: String,
     pub direct_url: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct RedisConfig {
+    pub official_url: String,
+    pub upstash_redis_url: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct Application {
+    pub host: String,
+    pub port: i16,
 }
 
 impl AppConfig {
@@ -29,4 +44,8 @@ impl AppConfig {
             .build()?
             .get::<T>(path)
     }
+}
+
+task_local! {
+    pub static REQUEST_ID: String
 }

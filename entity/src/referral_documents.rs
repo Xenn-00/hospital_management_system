@@ -3,30 +3,45 @@
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-#[sea_orm(table_name = "queue_ticket")]
+#[sea_orm(table_name = "referral_documents")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
-    #[sea_orm(unique)]
+    pub patients_id: i32,
     pub visit_intent_id: i32,
-    pub queue_number: i32,
-    pub queue_type: String,
+    pub file_name: String,
+    pub file_size: i64,
     pub status: String,
-    pub called_at: Option<DateTime>,
-    pub done_at: Option<DateTime>,
+    pub referral_document_url: String,
+    pub scanned_at: Option<DateTime>,
     pub created_at: DateTime,
+    pub updated_at: DateTime,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
+        belongs_to = "super::patients::Entity",
+        from = "Column::PatientsId",
+        to = "super::patients::Column::Id",
+        on_update = "NoAction",
+        on_delete = "Cascade"
+    )]
+    Patients,
+    #[sea_orm(
         belongs_to = "super::patients_visit_intent::Entity",
         from = "Column::VisitIntentId",
         to = "super::patients_visit_intent::Column::Id",
-        on_update = "Cascade",
+        on_update = "NoAction",
         on_delete = "Cascade"
     )]
     PatientsVisitIntent,
+}
+
+impl Related<super::patients::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Patients.def()
+    }
 }
 
 impl Related<super::patients_visit_intent::Entity> for Entity {

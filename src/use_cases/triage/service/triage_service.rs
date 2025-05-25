@@ -1,26 +1,31 @@
 use async_trait::async_trait;
+use aws_sdk_s3::{Client, primitives::ByteStream};
 use bb8::Pool;
 use bb8_redis::RedisConnectionManager;
 
 use chrono::{DateTime, Local, NaiveDateTime, Utc};
 use sea_orm::{DatabaseConnection, TransactionTrait};
+use uuid::Uuid;
 
-use crate::{
-    dtos::triage::response::{
-        TriagePatientCalled, TriagePatientCancel, TriageQueueComplete, TriageQueueItem,
-        TriageQueueResponse, TriageQueueStatus,
-    },
-    error_handling::app_error::AppError,
-    format_created_at, format_option_dt, parse_visit_type,
-    use_cases::triage::repo::triage_repo::{self, TriageRepo},
-    utils::helpers::{get_cache_data, set_cache_data},
-};
 pub use crate::{
     dtos::triage::{
         create_triage_request::{CreateTriageRequest, VisitType},
         response::CreateTriageResponse,
     },
     use_cases::triage::contracts::triage_contract::TriageContracts,
+};
+use crate::{
+    dtos::triage::{
+        referral_upload_metadata::ReferralUploadMetadata,
+        response::{
+            ReferralUploadResponse, TriagePatientCalled, TriagePatientCancel, TriageQueueComplete,
+            TriageQueueItem, TriageQueueResponse, TriageQueueStatus,
+        },
+    },
+    error_handling::app_error::AppError,
+    format_created_at, format_option_dt, parse_visit_type,
+    use_cases::triage::repo::triage_repo::{self, TriageRepo},
+    utils::helpers::{get_cache_data, set_cache_data},
 };
 
 pub struct TriageService;
@@ -32,17 +37,6 @@ impl TriageContracts for TriageService {
         payload: CreateTriageRequest,
     ) -> Result<CreateTriageResponse, AppError> {
         let txn = db.begin().await?;
-
-        if matches!(payload.visit_type, VisitType::BPJS) {
-            let ok = payload
-                .referral_document_url
-                .as_ref()
-                .map(|s| !s.trim().is_empty())
-                .unwrap_or(false);
-            if !ok {
-                AppError::BadRequest(format!("Referral document ist required for BPJS patient"));
-            }
-        }
 
         let patient =
             <TriageRepo as triage_repo::TriageTraitRepo>::find_or_create_patient(&txn, &payload)
@@ -271,6 +265,52 @@ impl TriageContracts for TriageService {
         };
 
         set_cache_data(&redis, &cache_key, &result, 300).await?;
+
+        Ok(result)
+    }
+
+    async fn handle_referral_upload(
+        db: &DatabaseConnection,
+        s3: &Client,
+        visit_id: i32,
+        patient_id: i32,
+        metadata: ReferralUploadMetadata,
+    ) -> Result<ReferralUploadResponse, AppError> {
+        let randomize = Uuid::new_v4();
+        let filename = format!(
+            "referral_file-{}-patient_{}-visit_{}.{}",
+            randomize, patient_id, visit_id, &metadata.extension
+        );
+        let bucket_name = "hms-temporal-bucket".to_string();
+        let file_bytes = metadata.file_bytes;
+
+        s3.put_object()
+            .bucket(&bucket_name)
+            .key(&filename)
+            .body(ByteStream::from(file_bytes.clone()))
+            .send()
+            .await?;
+
+        let url = format!("http://localhost:9000/{}/{}", bucket_name, &filename);
+
+        let txn = db.begin().await?;
+
+        let response = <TriageRepo as triage_repo::TriageTraitRepo>::upload_referral_docs(
+            &txn,
+            filename,
+            visit_id,
+            patient_id,
+            &file_bytes,
+            url,
+        )
+        .await?;
+
+        txn.commit().await?;
+
+        let result = ReferralUploadResponse {
+            status: response.status,
+            created_at: format_created_at!(response.created_at),
+        };
 
         Ok(result)
     }

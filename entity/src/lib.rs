@@ -5,3 +5,4 @@ pub mod prelude;
 pub mod patients;
 pub mod patients_visit_intent;
 pub mod queue_ticket;
+pub mod referral_documents;

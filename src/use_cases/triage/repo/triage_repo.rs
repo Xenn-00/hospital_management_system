@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use entity::{
     patients::{self, ActiveModel},
-    patients_visit_intent, queue_ticket,
+    patients_visit_intent, queue_ticket, referral_documents,
 };
 
 use sea_orm::{
@@ -63,9 +63,7 @@ impl TriageTraitRepo for TriageRepo {
         let model = patients_visit_intent::ActiveModel {
             patient_id: Set(patient_id),
             visit_type: Set(payload.visit_type.to_string()),
-            referral_document_url: Set(payload.referral_document_url.clone()),
             status: Set("WAITING".into()),
-            referral_validated: Set("PENDING".into()),
             created_at: Set(Utc::now().naive_utc()),
             updated_at: Set(Utc::now().naive_utc()),
             ..Default::default()
@@ -139,6 +137,24 @@ impl TriageTraitRepo for TriageRepo {
             visit_type, queue_number
         )))
     }
+
+    async fn update_visit_intent_status(
+        txn: &DatabaseTransaction,
+        visit_intent_id: i32,
+        status: &str,
+    ) -> Result<(), AppError> {
+        let intent = patients_visit_intent::Entity::find_by_id(visit_intent_id)
+            .one(txn)
+            .await?
+            .ok_or(AppError::NotFound("Visit intent not found".into()))?;
+
+        let mut active = patients_visit_intent::ActiveModel::from(intent);
+        active.status = Set(status.into());
+        active.updated_at = Set(Utc::now().naive_utc());
+        active.update(txn).await?;
+        Ok(())
+    }
+
     async fn call_patient(
         txn: &DatabaseTransaction,
         queue_number: i32,
@@ -151,10 +167,11 @@ impl TriageTraitRepo for TriageRepo {
             .one(txn)
             .await?
         {
-            let mut active_model: queue_ticket::ActiveModel = existing.into();
-            active_model.status = Set("CALLED".into());
-            active_model.called_at = Set(Some(Utc::now().naive_utc()));
-            let updated = active_model.update(txn).await?;
+            let mut queue_ticket_active_model: queue_ticket::ActiveModel = existing.into();
+            queue_ticket_active_model.status = Set("CALLED".into());
+            queue_ticket_active_model.called_at = Set(Some(Utc::now().naive_utc()));
+            let updated = queue_ticket_active_model.update(txn).await?;
+            Self::update_visit_intent_status(txn, updated.visit_intent_id, "CALLED").await?;
             return Ok(updated);
         }
 
@@ -187,6 +204,7 @@ impl TriageTraitRepo for TriageRepo {
                 active.status = Set("DONE".into());
                 active.done_at = Set(Some(Utc::now().naive_utc()));
                 let updated = active.update(txn).await?;
+                Self::update_visit_intent_status(txn, updated.visit_intent_id, "DONE").await?;
                 return Ok(updated);
             }
             None => {
@@ -229,5 +247,36 @@ impl TriageTraitRepo for TriageRepo {
                 )));
             }
         }
+    }
+
+    async fn upload_referral_docs(
+        txn: &DatabaseTransaction,
+        filename: String,
+        visit_id: i32,
+        patient_id: i32,
+        file_bytes: &Vec<u8>,
+        url: String,
+    ) -> Result<referral_documents::Model, AppError> {
+        let model = referral_documents::ActiveModel {
+            file_name: Set(filename),
+            visit_intent_id: Set(visit_id),
+            patients_id: Set(patient_id),
+            file_size: Set((file_bytes.len()) as i64),
+            status: Set("WAITING".to_string()),
+            referral_document_url: Set(url),
+            ..Default::default()
+        }
+        .insert(txn)
+        .await?;
+
+        let intent = patients_visit_intent::Entity::find_by_id(visit_id)
+            .one(txn)
+            .await?
+            .ok_or(AppError::NotFound("Visit intent not found".into()))?;
+        let mut active = patients_visit_intent::ActiveModel::from(intent);
+        active.referral_document_id = Set(Some(model.id));
+        active.update(txn).await?;
+
+        Ok(model)
     }
 }

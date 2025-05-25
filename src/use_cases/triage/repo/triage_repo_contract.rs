@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use entity::{patients, patients_visit_intent, queue_ticket};
+use entity::{patients, patients_visit_intent, queue_ticket, referral_documents};
 use sea_orm::{DatabaseConnection, DatabaseTransaction};
 
 use crate::{
@@ -35,6 +35,11 @@ pub trait TriageTraitRepo {
         queue_number: i32,
         visit_type: VisitType,
     ) -> Result<queue_ticket::Model, AppError>;
+    async fn update_visit_intent_status(
+        txn: &DatabaseTransaction,
+        visit_intent_id: i32,
+        status: &str,
+    ) -> Result<(), AppError>;
     async fn call_patient(
         txn: &DatabaseTransaction,
         queue_number: i32,
@@ -50,4 +55,12 @@ pub trait TriageTraitRepo {
         queue_number: i32,
         visit_type: &VisitType,
     ) -> Result<queue_ticket::Model, AppError>;
+    async fn upload_referral_docs(
+        txn: &DatabaseTransaction,
+        filename: String,
+        visit_id: i32,
+        patient_id: i32,
+        file_bytes: &Vec<u8>,
+        url: String,
+    ) -> Result<referral_documents::Model, AppError>;
 }

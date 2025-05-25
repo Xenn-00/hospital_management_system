@@ -1,5 +1,7 @@
+use aws_sdk_s3::{error::SdkError, operation::put_object::PutObjectError};
 use axum::{
     Json,
+    extract::multipart::MultipartError,
     response::{IntoResponse, Response},
 };
 use bb8::RunError;
@@ -56,15 +58,15 @@ impl AppError {
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        let (status, message, errors) = match self.clone() {
-            AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg.clone(), None),
+        let (status, message, errors) = match self {
+            AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg, None),
             AppError::ValidationError(api_field_errors) => (
                 StatusCode::BAD_REQUEST,
                 "Validation failed".into(),
-                Some(api_field_errors.clone()),
+                Some(api_field_errors),
             ),
-            AppError::NotFound(msg) => (StatusCode::NOT_FOUND, msg.clone(), None),
-            AppError::Internal(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg.clone(), None),
+            AppError::NotFound(msg) => (StatusCode::NOT_FOUND, msg, None),
+            AppError::Internal(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg, None),
         };
 
         let request_id = REQUEST_ID
@@ -121,5 +123,23 @@ impl From<serde_json::Error> for AppError {
     fn from(value: serde_json::Error) -> Self {
         tracing::error!("serde error: {:?}", value);
         AppError::Internal(value.to_string())
+    }
+}
+
+impl From<aws_sdk_s3::Error> for AppError {
+    fn from(value: aws_sdk_s3::Error) -> Self {
+        AppError::Internal(value.to_string())
+    }
+}
+
+impl From<SdkError<PutObjectError>> for AppError {
+    fn from(value: SdkError<PutObjectError>) -> Self {
+        AppError::Internal(value.to_string())
+    }
+}
+
+impl From<MultipartError> for AppError {
+    fn from(value: MultipartError) -> Self {
+        AppError::BadRequest(value.to_string())
     }
 }

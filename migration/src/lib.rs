@@ -6,6 +6,8 @@ mod m20250509_070014_create_patient_table;
 mod m20250511_121632_alter_table_queue_ticket;
 mod m20250511_123421_alter_table_patients;
 mod m20250512_050855_alter_patients_table;
+mod m20250521_071832_create_referral_documents_table;
+mod m20250521_094041_alter_patients_visit_intent_table;
 
 pub struct Migrator;
 
@@ -19,6 +21,8 @@ impl MigratorTrait for Migrator {
             Box::new(m20250511_121632_alter_table_queue_ticket::Migration),
             Box::new(m20250511_123421_alter_table_patients::Migration),
             Box::new(m20250512_050855_alter_patients_table::Migration),
+            Box::new(m20250521_071832_create_referral_documents_table::Migration),
+            Box::new(m20250521_094041_alter_patients_visit_intent_table::Migration),
         ]
     }
 }

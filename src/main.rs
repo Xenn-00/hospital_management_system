@@ -1,54 +1,52 @@
-use std::time::Duration;
-
 use axum::{Router, middleware};
 use hospital_management_system::{
     infra::config::AppConfig,
     middleware::request_middleware::assign_request_id,
     router::triage_route::triage_routes,
-    state::{self, init_redis_pool},
+    state::{self, init_database_connection, init_redis_pool, init_s3_client},
 };
 use log::info;
-use sea_orm::{ConnectOptions, Database};
+
 use tokio::{net::TcpListener, signal};
 use tower::ServiceBuilder;
+use tower_http::limit::RequestBodyLimitLayer;
 
 #[tokio::main]
 async fn main() {
     log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
-    let app_config = AppConfig::from_yaml("application.yaml").unwrap();
+    let app_config =
+        AppConfig::from_yaml("application.yaml").expect("Failed to load application.yaml");
 
+    // database config
     let url = app_config.database.url;
-    let mut options = ConnectOptions::new(&url);
+    let db = init_database_connection(&url).await;
 
-    options
-        .max_connections(20)
-        .min_connections(5)
-        .connect_timeout(Duration::from_secs(10))
-        .idle_timeout(Duration::from_secs(300))
-        .sqlx_logging(true);
-
-    let db = Database::connect(options)
-        .await
-        .expect("Failed to connect to the database");
-
+    // redis config
     let redis_url = app_config.redis.upstash_redis_url;
     let redis_pool = init_redis_pool(&redis_url).await;
 
+    // s3 config
+    let s3_config = app_config.s3;
+    let s3 = init_s3_client(&s3_config).await;
+
     info!("Connected to the database successfully");
     info!("Connected to the redis successfully");
+    info!("Connected to the s3 successfully");
 
     let app_state = state::AppState {
         db,
         redis: redis_pool,
+        s3,
     };
 
     let app = Router::new()
-        .nest("/api/v1", triage_routes(app_state))
-        .layer(ServiceBuilder::new().layer(middleware::from_fn(assign_request_id)));
+        .nest("/api/v1", triage_routes(app_state.clone()))
+        .layer(ServiceBuilder::new().layer(middleware::from_fn(assign_request_id)))
+        .layer(RequestBodyLimitLayer::new(10 * 1024 * 1024));
 
     let listener = TcpListener::bind(format!("{}:{}", app_config.app.host, app_config.app.port))
         .await
-        .unwrap();
+        .expect("Failed to bind to address");
     info!("Listening on {:?}", listener.local_addr().unwrap());
     axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())
@@ -62,4 +60,7 @@ async fn shutdown_signal() {
         .await
         .expect("Failed to listen for shutdown signal");
     info!("Shutdown signal received, exiting...");
+    std::panic::set_hook(Box::new(|panic_info| {
+        eprintln!("PANIC OCCURRED: {:?}", panic_info);
+    }));
 }

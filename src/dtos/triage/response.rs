@@ -56,3 +56,9 @@ pub struct TriagePatientCancel {
     pub previous_status: String,
     pub new_status: String,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ReferralUploadResponse {
+    pub status: String,
+    pub created_at: String,
+}

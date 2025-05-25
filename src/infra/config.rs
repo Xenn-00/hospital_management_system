@@ -10,6 +10,7 @@ pub struct AppConfig {
     pub database: DatabaseConfig,
     pub redis: RedisConfig,
     pub app: Application,
+    pub s3: S3Config,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -23,6 +24,14 @@ pub struct DatabaseConfig {
 pub struct RedisConfig {
     pub official_url: String,
     pub upstash_redis_url: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct S3Config {
+    pub s3_url: String,
+    pub s3_region: String,
+    pub s3_access_key: String,
+    pub s3_secret_key: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]

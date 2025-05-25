@@ -586,3 +586,229 @@
 2025-05-15T17:05:14.318003300+07:00 INFO hospital_management_system - Connected to the redis successfully
 2025-05-15T17:05:14.319356400+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
 2025-05-15T17:07:12.575794100+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-05-25T16:57:44.922783+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-05-25T16:57:44.923194+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-05-25T16:57:44.923345800+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-05-25T16:57:44.924316700+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-05-25T17:00:10.983105200+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage request_id=RequestId("3fc5f8a2-5eb7-4a70-9ce9-a4b3090c9072")
+2025-05-25T17:00:17.405080300+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage request_id=RequestId("bf69b1f9-2d57-4a4c-9ff4-17b506abf8ad")
+2025-05-25T17:00:17.425062500+07:00 ERROR sqlx::query - summary="SELECT \"patients\".\"id\", \"patients\".\"name\", \"patients\".\"date_of_birth\", …" db.statement="\n\nSELECT \"patients\".\"id\", \"patients\".\"name\", \"patients\".\"date_of_birth\", \"patients\".\"national_id\", \"patients\".\"bpjs_number\", \"patients\".\"gender\", \"patients\".\"emergency_contact_name\", \"patients\".\"emergency_contact_phone\", \"patients\".\"emergency_contact_relationship\", \"patients\".\"blood_type\", \"patients\".\"known_allergies\", \"patients\".\"created_at\", \"patients\".\"updated_at\" FROM \"patients\" WHERE \"patients\".\"national_id\" = $1 LIMIT $2\n" rows_affected=0 rows_returned=0 elapsed=11.7706ms elapsed_secs=0.0117706
+2025-05-25T17:00:17.441510400+07:00 ERROR sqlx::query - summary="INSERT INTO \"patients\" (\"name\", …" db.statement="\n\nINSERT INTO \"patients\" (\"name\", \"date_of_birth\", \"national_id\", \"bpjs_number\", \"gender\", \"emergency_contact_name\", \"emergency_contact_phone\", \"emergency_contact_relationship\", \"blood_type\", \"known_allergies\", \"created_at\", \"updated_at\") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING \"id\", \"name\", \"date_of_birth\", \"national_id\", \"bpjs_number\", \"gender\", \"emergency_contact_name\", \"emergency_contact_phone\", \"emergency_contact_relationship\", \"blood_type\", \"known_allergies\", \"created_at\", \"updated_at\"\n" rows_affected=1 rows_returned=1 elapsed=15.819ms elapsed_secs=0.015819
+2025-05-25T17:00:17.451213600+07:00 ERROR sqlx::query - summary="INSERT INTO \"patients_visit_intent\" (\"patient_id\", …" db.statement="\n\nINSERT INTO \"patients_visit_intent\" (\"patient_id\", \"visit_type\", \"status\", \"created_at\", \"updated_at\") VALUES ($1, $2, $3, $4, $5) RETURNING \"id\", \"patient_id\", \"visit_type\", \"status\", \"created_at\", \"updated_at\", \"referral_document_id\"\n" rows_affected=1 rows_returned=1 elapsed=9.1583ms elapsed_secs=0.0091583
+2025-05-25T17:00:17.457661500+07:00 ERROR sqlx::query - summary="SELECT COUNT(*) AS num_items …" db.statement="\n\nSELECT COUNT(*) AS num_items FROM (SELECT \"queue_ticket\".\"id\", \"queue_ticket\".\"visit_intent_id\", \"queue_ticket\".\"queue_number\", \"queue_ticket\".\"queue_type\", \"queue_ticket\".\"status\", \"queue_ticket\".\"called_at\", \"queue_ticket\".\"done_at\", \"queue_ticket\".\"created_at\" FROM \"queue_ticket\" WHERE \"queue_ticket\".\"queue_type\" = $1) AS \"sub_query\"\n" rows_affected=1 rows_returned=1 elapsed=5.9527ms elapsed_secs=0.0059527
+2025-05-25T17:00:17.462069600+07:00 ERROR sqlx::query - summary="INSERT INTO \"queue_ticket\" (\"visit_intent_id\", …" db.statement="\n\nINSERT INTO \"queue_ticket\" (\"visit_intent_id\", \"queue_number\", \"queue_type\", \"status\", \"created_at\") VALUES ($1, $2, $3, $4, $5) RETURNING \"id\", \"visit_intent_id\", \"queue_number\", \"queue_type\", \"status\", \"called_at\", \"done_at\", \"created_at\"\n" rows_affected=1 rows_returned=1 elapsed=3.8552ms elapsed_secs=0.0038552
+2025-05-25T17:00:17.469250900+07:00 ERROR sqlx::query - summary="COMMIT" db.statement="" rows_affected=0 rows_returned=0 elapsed=6.7414ms elapsed_secs=0.0067414
+2025-05-25T17:00:30.764447700+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=GET uri=/triage/queue/common request_id=RequestId("ef73f34f-f0b0-46e9-acfc-4f8524542550")
+2025-05-25T17:00:30.823081300+07:00 ERROR sqlx::query - summary="SELECT \"queue_ticket\".\"id\" AS \"A_id\", …" db.statement="\n\nSELECT \"queue_ticket\".\"id\" AS \"A_id\", \"queue_ticket\".\"visit_intent_id\" AS \"A_visit_intent_id\", \"queue_ticket\".\"queue_number\" AS \"A_queue_number\", \"queue_ticket\".\"queue_type\" AS \"A_queue_type\", \"queue_ticket\".\"status\" AS \"A_status\", \"queue_ticket\".\"called_at\" AS \"A_called_at\", \"queue_ticket\".\"done_at\" AS \"A_done_at\", \"queue_ticket\".\"created_at\" AS \"A_created_at\", \"patients_visit_intent\".\"id\" AS \"B_id\", \"patients_visit_intent\".\"patient_id\" AS \"B_patient_id\", \"patients_visit_intent\".\"visit_type\" AS \"B_visit_type\", \"patients_visit_intent\".\"status\" AS \"B_status\", \"patients_visit_intent\".\"created_at\" AS \"B_created_at\", \"patients_visit_intent\".\"updated_at\" AS \"B_updated_at\", \"patients_visit_intent\".\"referral_document_id\" AS \"B_referral_document_id\" FROM \"queue_ticket\" LEFT JOIN \"patients_visit_intent\" ON \"queue_ticket\".\"visit_intent_id\" = \"patients_visit_intent\".\"id\" WHERE \"queue_ticket\".\"queue_type\" = $1 AND \"queue_ticket\".\"status\" = $2 ORDER BY \"queue_ticket\".\"created_at\" ASC\n" rows_affected=0 rows_returned=0 elapsed=3.891ms elapsed_secs=0.003891
+2025-05-25T17:00:37.075468400+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=GET uri=/triage/queue/bpjs request_id=RequestId("eb324f3f-af21-4d6b-bc70-d6387d9a6e3c")
+2025-05-25T17:00:37.136085200+07:00 ERROR sqlx::query - summary="SELECT \"queue_ticket\".\"id\" AS \"A_id\", …" db.statement="\n\nSELECT \"queue_ticket\".\"id\" AS \"A_id\", \"queue_ticket\".\"visit_intent_id\" AS \"A_visit_intent_id\", \"queue_ticket\".\"queue_number\" AS \"A_queue_number\", \"queue_ticket\".\"queue_type\" AS \"A_queue_type\", \"queue_ticket\".\"status\" AS \"A_status\", \"queue_ticket\".\"called_at\" AS \"A_called_at\", \"queue_ticket\".\"done_at\" AS \"A_done_at\", \"queue_ticket\".\"created_at\" AS \"A_created_at\", \"patients_visit_intent\".\"id\" AS \"B_id\", \"patients_visit_intent\".\"patient_id\" AS \"B_patient_id\", \"patients_visit_intent\".\"visit_type\" AS \"B_visit_type\", \"patients_visit_intent\".\"status\" AS \"B_status\", \"patients_visit_intent\".\"created_at\" AS \"B_created_at\", \"patients_visit_intent\".\"updated_at\" AS \"B_updated_at\", \"patients_visit_intent\".\"referral_document_id\" AS \"B_referral_document_id\" FROM \"queue_ticket\" LEFT JOIN \"patients_visit_intent\" ON \"queue_ticket\".\"visit_intent_id\" = \"patients_visit_intent\".\"id\" WHERE \"queue_ticket\".\"queue_type\" = $1 AND \"queue_ticket\".\"status\" = $2 ORDER BY \"queue_ticket\".\"created_at\" ASC\n" rows_affected=1 rows_returned=1 elapsed=1.9121ms elapsed_secs=0.0019121
+2025-05-25T17:01:02.915448+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=GET uri=/triage/queue/bpjs/1 request_id=RequestId("8421aa04-7526-45e6-a642-3a5bf612cc83")
+2025-05-25T17:01:02.975739400+07:00 ERROR sqlx::query - summary="SELECT \"queue_ticket\".\"id\", \"queue_ticket\".\"visit_intent_id\", \"queue_ticket\".\"queue_number\", …" db.statement="\n\nSELECT \"queue_ticket\".\"id\", \"queue_ticket\".\"visit_intent_id\", \"queue_ticket\".\"queue_number\", \"queue_ticket\".\"queue_type\", \"queue_ticket\".\"status\", \"queue_ticket\".\"called_at\", \"queue_ticket\".\"done_at\", \"queue_ticket\".\"created_at\" FROM \"queue_ticket\" WHERE \"queue_ticket\".\"queue_number\" = $1 AND \"queue_ticket\".\"queue_type\" = $2 LIMIT $3\n" rows_affected=1 rows_returned=1 elapsed=1.6968ms elapsed_secs=0.0016968
+2025-05-25T17:01:15.659801700+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=PATCH uri=/triage/call/bpjs/1 request_id=RequestId("5bfdf98b-c771-4d1d-b5a1-dc716a62a680")
+2025-05-25T17:01:15.724657600+07:00 ERROR sqlx::query - summary="SELECT \"queue_ticket\".\"id\", \"queue_ticket\".\"visit_intent_id\", \"queue_ticket\".\"queue_number\", …" db.statement="\n\nSELECT \"queue_ticket\".\"id\", \"queue_ticket\".\"visit_intent_id\", \"queue_ticket\".\"queue_number\", \"queue_ticket\".\"queue_type\", \"queue_ticket\".\"status\", \"queue_ticket\".\"called_at\", \"queue_ticket\".\"done_at\", \"queue_ticket\".\"created_at\" FROM \"queue_ticket\" WHERE \"queue_ticket\".\"queue_number\" = $1 AND \"queue_ticket\".\"queue_type\" = $2 AND \"queue_ticket\".\"status\" = $3 LIMIT $4\n" rows_affected=1 rows_returned=1 elapsed=1.6573ms elapsed_secs=0.0016573
+2025-05-25T17:01:15.734461600+07:00 ERROR sqlx::query - summary="UPDATE \"queue_ticket\" SET \"status\" …" db.statement="\n\nUPDATE \"queue_ticket\" SET \"status\" = $1, \"called_at\" = $2 WHERE \"queue_ticket\".\"id\" = $3 RETURNING \"id\", \"visit_intent_id\", \"queue_number\", \"queue_type\", \"status\", \"called_at\", \"done_at\", \"created_at\"\n" rows_affected=1 rows_returned=1 elapsed=9.3931ms elapsed_secs=0.0093931
+2025-05-25T17:01:15.737713300+07:00 ERROR sqlx::query - summary="COMMIT" db.statement="" rows_affected=0 rows_returned=0 elapsed=2.7816ms elapsed_secs=0.0027816
+2025-05-25T17:01:30.114129200+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=PATCH uri=/triage/complete/bpjs/1 request_id=RequestId("5b7bc7d9-ed44-41c4-a969-c7d41193cd6b")
+2025-05-25T17:01:30.175482600+07:00 ERROR sqlx::query - summary="SELECT \"queue_ticket\".\"id\", \"queue_ticket\".\"visit_intent_id\", \"queue_ticket\".\"queue_number\", …" db.statement="\n\nSELECT \"queue_ticket\".\"id\", \"queue_ticket\".\"visit_intent_id\", \"queue_ticket\".\"queue_number\", \"queue_ticket\".\"queue_type\", \"queue_ticket\".\"status\", \"queue_ticket\".\"called_at\", \"queue_ticket\".\"done_at\", \"queue_ticket\".\"created_at\" FROM \"queue_ticket\" WHERE \"queue_ticket\".\"queue_number\" = $1 AND \"queue_ticket\".\"queue_type\" = $2 LIMIT $3\n" rows_affected=1 rows_returned=1 elapsed=1.6844ms elapsed_secs=0.0016844
+2025-05-25T17:01:30.178226300+07:00 ERROR sqlx::query - summary="UPDATE \"queue_ticket\" SET \"status\" …" db.statement="\n\nUPDATE \"queue_ticket\" SET \"status\" = $1, \"done_at\" = $2 WHERE \"queue_ticket\".\"id\" = $3 RETURNING \"id\", \"visit_intent_id\", \"queue_number\", \"queue_type\", \"status\", \"called_at\", \"done_at\", \"created_at\"\n" rows_affected=1 rows_returned=1 elapsed=2.1989ms elapsed_secs=0.0021989
+2025-05-25T17:01:30.181114100+07:00 ERROR sqlx::query - summary="COMMIT" db.statement="" rows_affected=0 rows_returned=0 elapsed=2.5338ms elapsed_secs=0.0025338
+2025-05-25T17:03:10.441442800+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-05-25T17:19:28.712271100+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-05-25T17:19:28.712446800+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-05-25T17:19:28.712556+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-05-25T17:19:28.713536200+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-05-25T17:19:30.325366100+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage request_id=RequestId("ea0dfedc-bb2c-4d7a-a2b6-7de02cd664fb")
+2025-05-25T17:19:30.336587300+07:00 ERROR sqlx::query - summary="SELECT \"patients\".\"id\", \"patients\".\"name\", \"patients\".\"date_of_birth\", …" db.statement="\n\nSELECT \"patients\".\"id\", \"patients\".\"name\", \"patients\".\"date_of_birth\", \"patients\".\"national_id\", \"patients\".\"bpjs_number\", \"patients\".\"gender\", \"patients\".\"emergency_contact_name\", \"patients\".\"emergency_contact_phone\", \"patients\".\"emergency_contact_relationship\", \"patients\".\"blood_type\", \"patients\".\"known_allergies\", \"patients\".\"created_at\", \"patients\".\"updated_at\" FROM \"patients\" WHERE \"patients\".\"national_id\" = $1 LIMIT $2\n" rows_affected=0 rows_returned=0 elapsed=4.8602ms elapsed_secs=0.0048602
+2025-05-25T17:19:30.341235500+07:00 ERROR sqlx::query - summary="INSERT INTO \"patients\" (\"name\", …" db.statement="\n\nINSERT INTO \"patients\" (\"name\", \"date_of_birth\", \"national_id\", \"bpjs_number\", \"gender\", \"emergency_contact_name\", \"emergency_contact_phone\", \"emergency_contact_relationship\", \"blood_type\", \"known_allergies\", \"created_at\", \"updated_at\") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING \"id\", \"name\", \"date_of_birth\", \"national_id\", \"bpjs_number\", \"gender\", \"emergency_contact_name\", \"emergency_contact_phone\", \"emergency_contact_relationship\", \"blood_type\", \"known_allergies\", \"created_at\", \"updated_at\"\n" rows_affected=1 rows_returned=1 elapsed=3.9885ms elapsed_secs=0.0039885
+2025-05-25T17:19:30.344021800+07:00 ERROR sqlx::query - summary="INSERT INTO \"patients_visit_intent\" (\"patient_id\", …" db.statement="\n\nINSERT INTO \"patients_visit_intent\" (\"patient_id\", \"visit_type\", \"status\", \"created_at\", \"updated_at\") VALUES ($1, $2, $3, $4, $5) RETURNING \"id\", \"patient_id\", \"visit_type\", \"status\", \"created_at\", \"updated_at\", \"referral_document_id\"\n" rows_affected=1 rows_returned=1 elapsed=2.2457ms elapsed_secs=0.0022457
+2025-05-25T17:19:30.346939700+07:00 ERROR sqlx::query - summary="SELECT COUNT(*) AS num_items …" db.statement="\n\nSELECT COUNT(*) AS num_items FROM (SELECT \"queue_ticket\".\"id\", \"queue_ticket\".\"visit_intent_id\", \"queue_ticket\".\"queue_number\", \"queue_ticket\".\"queue_type\", \"queue_ticket\".\"status\", \"queue_ticket\".\"called_at\", \"queue_ticket\".\"done_at\", \"queue_ticket\".\"created_at\" FROM \"queue_ticket\" WHERE \"queue_ticket\".\"queue_type\" = $1) AS \"sub_query\"\n" rows_affected=1 rows_returned=1 elapsed=2.4537ms elapsed_secs=0.0024537
+2025-05-25T17:19:30.349451800+07:00 ERROR sqlx::query - summary="INSERT INTO \"queue_ticket\" (\"visit_intent_id\", …" db.statement="\n\nINSERT INTO \"queue_ticket\" (\"visit_intent_id\", \"queue_number\", \"queue_type\", \"status\", \"created_at\") VALUES ($1, $2, $3, $4, $5) RETURNING \"id\", \"visit_intent_id\", \"queue_number\", \"queue_type\", \"status\", \"called_at\", \"done_at\", \"created_at\"\n" rows_affected=1 rows_returned=1 elapsed=2.1017ms elapsed_secs=0.0021017
+2025-05-25T17:19:30.352517400+07:00 ERROR sqlx::query - summary="COMMIT" db.statement="" rows_affected=0 rows_returned=0 elapsed=2.6584ms elapsed_secs=0.0026584
+2025-05-25T17:20:54.513844800+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=GET uri=/triage/queue/bpjs request_id=RequestId("f741f322-63e0-4728-9e82-707ce2e4090b")
+2025-05-25T17:20:54.578153900+07:00 ERROR sqlx::query - summary="SELECT \"queue_ticket\".\"id\" AS \"A_id\", …" db.statement="\n\nSELECT \"queue_ticket\".\"id\" AS \"A_id\", \"queue_ticket\".\"visit_intent_id\" AS \"A_visit_intent_id\", \"queue_ticket\".\"queue_number\" AS \"A_queue_number\", \"queue_ticket\".\"queue_type\" AS \"A_queue_type\", \"queue_ticket\".\"status\" AS \"A_status\", \"queue_ticket\".\"called_at\" AS \"A_called_at\", \"queue_ticket\".\"done_at\" AS \"A_done_at\", \"queue_ticket\".\"created_at\" AS \"A_created_at\", \"patients_visit_intent\".\"id\" AS \"B_id\", \"patients_visit_intent\".\"patient_id\" AS \"B_patient_id\", \"patients_visit_intent\".\"visit_type\" AS \"B_visit_type\", \"patients_visit_intent\".\"status\" AS \"B_status\", \"patients_visit_intent\".\"created_at\" AS \"B_created_at\", \"patients_visit_intent\".\"updated_at\" AS \"B_updated_at\", \"patients_visit_intent\".\"referral_document_id\" AS \"B_referral_document_id\" FROM \"queue_ticket\" LEFT JOIN \"patients_visit_intent\" ON \"queue_ticket\".\"visit_intent_id\" = \"patients_visit_intent\".\"id\" WHERE \"queue_ticket\".\"queue_type\" = $1 AND \"queue_ticket\".\"status\" = $2 ORDER BY \"queue_ticket\".\"created_at\" ASC\n" rows_affected=1 rows_returned=1 elapsed=4.5353ms elapsed_secs=0.0045353
+2025-05-25T17:21:14.220517200+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=GET uri=/triage/queue/bpjs/1 request_id=RequestId("151e5738-b76b-4110-af00-0aaf8031c9ac")
+2025-05-25T17:21:14.277049+07:00 ERROR sqlx::query - summary="SELECT \"queue_ticket\".\"id\", \"queue_ticket\".\"visit_intent_id\", \"queue_ticket\".\"queue_number\", …" db.statement="\n\nSELECT \"queue_ticket\".\"id\", \"queue_ticket\".\"visit_intent_id\", \"queue_ticket\".\"queue_number\", \"queue_ticket\".\"queue_type\", \"queue_ticket\".\"status\", \"queue_ticket\".\"called_at\", \"queue_ticket\".\"done_at\", \"queue_ticket\".\"created_at\" FROM \"queue_ticket\" WHERE \"queue_ticket\".\"queue_number\" = $1 AND \"queue_ticket\".\"queue_type\" = $2 LIMIT $3\n" rows_affected=1 rows_returned=1 elapsed=1.5613ms elapsed_secs=0.0015613
+2025-05-25T17:21:26.334206+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=PATCH uri=/triage/call/bpjs/1 request_id=RequestId("82c7cfe2-756b-4c52-9550-cb7d39ab51ed")
+2025-05-25T17:21:26.390097300+07:00 ERROR sqlx::query - summary="SELECT \"queue_ticket\".\"id\", \"queue_ticket\".\"visit_intent_id\", \"queue_ticket\".\"queue_number\", …" db.statement="\n\nSELECT \"queue_ticket\".\"id\", \"queue_ticket\".\"visit_intent_id\", \"queue_ticket\".\"queue_number\", \"queue_ticket\".\"queue_type\", \"queue_ticket\".\"status\", \"queue_ticket\".\"called_at\", \"queue_ticket\".\"done_at\", \"queue_ticket\".\"created_at\" FROM \"queue_ticket\" WHERE \"queue_ticket\".\"queue_number\" = $1 AND \"queue_ticket\".\"queue_type\" = $2 AND \"queue_ticket\".\"status\" = $3 LIMIT $4\n" rows_affected=1 rows_returned=1 elapsed=1.8385ms elapsed_secs=0.0018385
+2025-05-25T17:21:26.411161800+07:00 ERROR sqlx::query - summary="UPDATE \"queue_ticket\" SET \"status\" …" db.statement="\n\nUPDATE \"queue_ticket\" SET \"status\" = $1, \"called_at\" = $2 WHERE \"queue_ticket\".\"id\" = $3 RETURNING \"id\", \"visit_intent_id\", \"queue_number\", \"queue_type\", \"status\", \"called_at\", \"done_at\", \"created_at\"\n" rows_affected=1 rows_returned=1 elapsed=20.514ms elapsed_secs=0.020514
+2025-05-25T17:21:26.413251700+07:00 ERROR sqlx::query - summary="SELECT \"patients_visit_intent\".\"id\", \"patients_visit_intent\".\"patient_id\", \"patients_visit_intent\".\"visit_type\", …" db.statement="\n\nSELECT \"patients_visit_intent\".\"id\", \"patients_visit_intent\".\"patient_id\", \"patients_visit_intent\".\"visit_type\", \"patients_visit_intent\".\"status\", \"patients_visit_intent\".\"created_at\", \"patients_visit_intent\".\"updated_at\", \"patients_visit_intent\".\"referral_document_id\" FROM \"patients_visit_intent\" WHERE \"patients_visit_intent\".\"id\" = $1 LIMIT $2\n" rows_affected=1 rows_returned=1 elapsed=1.5835ms elapsed_secs=0.0015835
+2025-05-25T17:21:26.415587+07:00 ERROR sqlx::query - summary="UPDATE \"patients_visit_intent\" SET \"status\" …" db.statement="\n\nUPDATE \"patients_visit_intent\" SET \"status\" = $1, \"updated_at\" = $2 WHERE \"patients_visit_intent\".\"id\" = $3 RETURNING \"id\", \"patient_id\", \"visit_type\", \"status\", \"created_at\", \"updated_at\", \"referral_document_id\"\n" rows_affected=1 rows_returned=1 elapsed=1.9224ms elapsed_secs=0.0019224
+2025-05-25T17:21:26.418307600+07:00 ERROR sqlx::query - summary="COMMIT" db.statement="" rows_affected=0 rows_returned=0 elapsed=2.3246ms elapsed_secs=0.0023246
+2025-05-25T20:47:20.771714500+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-05-25T20:47:45.184970400+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-05-25T20:47:45.185308300+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-05-25T20:47:45.185448800+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-05-25T20:47:45.186574300+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-05-25T20:47:52.421372700+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=GET uri=/triage/queue/bpjs/1 request_id=RequestId("3483907b-3ff7-45c8-9d4f-8d9f3b1bc6c7")
+2025-05-25T20:47:52.490663+07:00 WARN sqlx::query - summary="SELECT \"queue_ticket\".\"id\", \"queue_ticket\".\"visit_intent_id\", \"queue_ticket\".\"queue_number\", …" db.statement="\n\nSELECT \"queue_ticket\".\"id\", \"queue_ticket\".\"visit_intent_id\", \"queue_ticket\".\"queue_number\", \"queue_ticket\".\"queue_type\", \"queue_ticket\".\"status\", \"queue_ticket\".\"called_at\", \"queue_ticket\".\"done_at\", \"queue_ticket\".\"created_at\" FROM \"queue_ticket\" WHERE \"queue_ticket\".\"queue_number\" = $1 AND \"queue_ticket\".\"queue_type\" = $2 LIMIT $3\n" rows_affected=1 rows_returned=1 elapsed=12.7477ms elapsed_secs=0.0127477
+2025-05-25T20:48:01.398318+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-05-25T20:48:36.898485300+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-05-25T20:48:36.898715100+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-05-25T20:48:36.898876700+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-05-25T20:48:36.899643800+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-05-25T20:48:45.992653+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=GET uri=/triage/queue/bpjs/1 request_id=RequestId("635ca35d-9b34-4c34-bac6-01b327c0a77b")
+2025-05-25T20:51:11.940387500+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=PATCH uri=/triage/complete/bpjs/1 request_id=RequestId("e8f593db-6506-4b26-91aa-50564b65479d")
+2025-05-25T20:55:18.391703700+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=GET uri=/triage/queue/bpjs/1 request_id=RequestId("15d92793-5930-4bec-accc-0704ac29ff6c")
+2025-05-25T20:55:21.274520800+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=GET uri=/triage/queue/bpjs request_id=RequestId("4cc25374-923b-4eb3-ac2e-2027cbe2e388")
+2025-05-25T21:01:31.905563600+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("9d241fa3-8cde-4a88-a9e3-60510495f785")
+2025-05-25T21:02:31.731933+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("33bca97d-b9d6-466a-af9e-1a84b904c2a0")
+2025-05-25T21:03:36.278233600+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("91edfe8b-d1d2-4a44-990b-b512f0eed29b")
+2025-05-25T21:03:57.327701+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-05-25T21:04:38.776956+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-05-25T21:04:38.777242900+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-05-25T21:04:38.777360+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-05-25T21:04:38.778134800+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-05-25T21:04:50.021202400+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("de8224d5-41f9-47ed-9848-9dea6bf01e6f")
+2025-05-25T21:04:50.021723500+07:00 INFO hospital_management_system::handlers::triage::triage_handler - kyojuro-rengoku-5k-3840x2160-13969.jpg
+2025-05-25T21:05:09.436875200+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-05-25T21:05:47.221012600+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-05-25T21:05:47.221219800+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-05-25T21:05:47.221346400+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-05-25T21:05:47.222152400+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-05-25T21:05:50.170910700+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("c0e9dc32-9bb8-405d-b792-7b411a32536f")
+2025-05-25T21:05:50.171363+07:00 INFO hospital_management_system::handlers::triage::triage_handler - filename : kyojuro-rengoku-5k-3840x2160-13969.jpg
+2025-05-25T21:05:50.171494400+07:00 INFO hospital_management_system::handlers::triage::triage_handler - ext : jpg
+2025-05-25T21:06:18.749195700+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-05-25T21:06:52.350101300+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-05-25T21:06:52.350363100+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-05-25T21:06:52.350481600+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-05-25T21:06:52.351397+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-05-25T21:06:55.654743100+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("2f8c8f9f-b197-4167-8723-eb29819e4cca")
+2025-05-25T21:06:55.655152100+07:00 INFO hospital_management_system::handlers::triage::triage_handler - filename : kyojuro-rengoku-5k-3840x2160-13969.jpg
+2025-05-25T21:06:55.655284100+07:00 INFO hospital_management_system::handlers::triage::triage_handler - ext : jpg
+2025-05-25T21:06:55.655423300+07:00 INFO hospital_management_system::handlers::triage::triage_handler - valid ext : false
+2025-05-25T21:08:17.202783500+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-05-25T21:08:30.013758300+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-05-25T21:08:30.013991700+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-05-25T21:08:30.014086200+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-05-25T21:08:30.014912400+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-05-25T21:08:33.506849700+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("3ea3db1f-da8a-469a-80d7-68a02f6ad3a0")
+2025-05-25T21:08:33.507261800+07:00 INFO hospital_management_system::handlers::triage::triage_handler - filename : kyojuro-rengoku-5k-3840x2160-13969.jpg
+2025-05-25T21:08:33.507340+07:00 INFO hospital_management_system::handlers::triage::triage_handler - ext : jpg
+2025-05-25T21:08:33.507400800+07:00 INFO hospital_management_system::handlers::triage::triage_handler - valid ext : false
+2025-05-25T21:09:26.274085300+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-05-25T21:13:49.108747600+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-05-25T21:13:49.108983700+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-05-25T21:13:49.109078900+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-05-25T21:13:49.109902100+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-05-25T21:13:50.213708800+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("3c12a775-3534-4d0a-abc3-2c52ef8dbf3e")
+2025-05-25T21:13:50.214060900+07:00 INFO hospital_management_system::handlers::triage::triage_handler - filename : kyojuro-rengoku-5k-3840x2160-13969.jpg
+2025-05-25T21:13:50.214144900+07:00 INFO hospital_management_system::handlers::triage::triage_handler - ext : jpg
+2025-05-25T21:13:50.214203300+07:00 INFO hospital_management_system::handlers::triage::triage_handler - valid ext : false
+2025-05-25T21:20:14.497259100+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-05-25T21:20:35.345635900+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-05-25T21:20:35.345838+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-05-25T21:20:35.345919500+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-05-25T21:20:35.346756900+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-05-25T21:20:37.158126200+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("f669e786-739d-44f6-a061-e22ac3f17950")
+2025-05-25T21:20:37.158476300+07:00 INFO hospital_management_system::handlers::triage::triage_handler - filename : kyojuro-rengoku-5k-3840x2160-13969.jpg
+2025-05-25T21:20:37.158575200+07:00 INFO hospital_management_system::handlers::triage::triage_handler - ext : jpg
+2025-05-25T21:20:37.158658+07:00 INFO hospital_management_system::handlers::triage::triage_handler - valid ext : true
+2025-05-25T21:21:19.183904100+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-05-25T21:21:47.025220700+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-05-25T21:21:47.025404600+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-05-25T21:21:47.025479800+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-05-25T21:21:47.026122200+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-05-25T21:21:48.100120600+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("aab2f913-0c5c-4705-9bcd-8003582109f2")
+2025-05-25T21:21:48.100497900+07:00 INFO hospital_management_system::handlers::triage::triage_handler - filename : kyojuro-rengoku-5k-3840x2160-13969.jpg
+2025-05-25T21:21:48.100611500+07:00 INFO hospital_management_system::handlers::triage::triage_handler - ext : jpg
+2025-05-25T21:21:48.100724800+07:00 INFO hospital_management_system::handlers::triage::triage_handler - valid ext : true
+2025-05-25T21:22:24.719345200+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-05-25T21:25:44.643431200+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-05-25T21:25:44.643683900+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-05-25T21:25:44.643806300+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-05-25T21:25:44.644596400+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-05-25T21:25:45.808134200+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("fc5dd1b0-82c5-4f44-b8d7-ed57b5230390")
+2025-05-25T21:25:45.808571+07:00 INFO hospital_management_system::handlers::triage::triage_handler - filename : kyojuro-rengoku-5k-3840x2160-13969.jpg
+2025-05-25T21:25:45.808704600+07:00 INFO hospital_management_system::handlers::triage::triage_handler - ext : jpg
+2025-05-25T21:25:45.808807200+07:00 INFO hospital_management_system::handlers::triage::triage_handler - valid ext : true
+2025-05-25T21:26:42.066589800+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-05-25T21:31:23.738714900+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-05-25T21:31:23.738945700+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-05-25T21:31:23.739035300+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-05-25T21:31:23.739852900+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-05-25T21:31:24.984751+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("65fb83f5-67ad-4ecf-8737-a693208729b2")
+2025-05-25T21:31:24.985197500+07:00 INFO hospital_management_system::handlers::triage::triage_handler - filename : kyojuro-rengoku-5k-3840x2160-13969.jpg
+2025-05-25T21:31:24.985374200+07:00 INFO hospital_management_system::handlers::triage::triage_handler - ext : jpg
+2025-05-25T21:31:24.985482500+07:00 INFO hospital_management_system::handlers::triage::triage_handler - valid ext : true
+2025-05-25T21:33:12.762021900+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("4c19e181-486a-4a82-942a-211a6e36d521")
+2025-05-25T21:33:12.762350+07:00 INFO hospital_management_system::handlers::triage::triage_handler - filename : Night.jpg
+2025-05-25T21:33:12.762483300+07:00 INFO hospital_management_system::handlers::triage::triage_handler - ext : jpg
+2025-05-25T21:33:12.762599900+07:00 INFO hospital_management_system::handlers::triage::triage_handler - valid ext : true
+2025-05-25T21:33:12.763518600+07:00 INFO hospital_management_system::handlers::triage::triage_handler - Uploading file for patient_id: 42, visit_id: 55, filename: Night.jpg
+2025-05-25T21:33:12.873202400+07:00 ERROR hospital_management_system::error_handling::app_error - DB error: Query(SqlxError(Database(PgDatabaseError { severity: Error, code: "23502", message: "null value in column \"referral_document_url\" of relation \"referral_documents\" violates not-null constraint", detail: Some("Failing row contains (1, 42, 55, referral_file-22a6c360-d1ac-4270-91fc-8588aace9459-patient_42-vi..., 70138, WAITING, null, null, 2025-05-25 14:33:12.855046, 2025-05-25 14:33:12.855046)."), hint: None, position: None, where: None, schema: Some("public"), table: Some("referral_documents"), column: Some("referral_document_url"), data_type: None, constraint: None, file: Some("execMain.c"), line: Some(1982), routine: Some("ExecConstraints") })))
+2025-05-25T21:34:26.109140900+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-05-25T21:50:52.431576200+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-05-25T21:50:52.431760700+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-05-25T21:50:52.431871900+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-05-25T21:50:52.432527200+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-05-25T21:51:49.922312700+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("5a62b3ca-770a-4198-8a0b-619fa3af92b3")
+2025-05-25T21:51:49.923202900+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("3c393ee9-9cac-4d99-9125-a951c81ff2be")
+2025-05-25T21:52:06.520795600+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("b1150d0e-5bbe-4ffc-989c-5b1bb418f227")
+2025-05-25T21:52:06.521111500+07:00 INFO hospital_management_system::handlers::triage::triage_handler - filename : kyojuro-rengoku.jpg
+2025-05-25T21:52:06.521227500+07:00 INFO hospital_management_system::handlers::triage::triage_handler - ext : jpg
+2025-05-25T21:52:06.521479500+07:00 INFO hospital_management_system::handlers::triage::triage_handler - valid ext : true
+2025-05-25T21:52:24.166520400+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("60f1a3cd-91d5-4c5d-aa10-f3dff5ec2395")
+2025-05-25T21:52:24.166757100+07:00 INFO hospital_management_system::handlers::triage::triage_handler - filename : kyojuro-rengoku.jpg
+2025-05-25T21:52:24.166860800+07:00 INFO hospital_management_system::handlers::triage::triage_handler - ext : jpg
+2025-05-25T21:52:24.166972700+07:00 INFO hospital_management_system::handlers::triage::triage_handler - valid ext : true
+2025-05-25T21:52:40.278709+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("f1ad91f1-c7d3-47fc-b208-0c80dd966390")
+2025-05-25T21:52:40.279041800+07:00 INFO hospital_management_system::handlers::triage::triage_handler - filename : Night.jpg
+2025-05-25T21:52:40.279171300+07:00 INFO hospital_management_system::handlers::triage::triage_handler - ext : jpg
+2025-05-25T21:52:40.279313100+07:00 INFO hospital_management_system::handlers::triage::triage_handler - valid ext : true
+2025-05-25T21:52:40.280217200+07:00 INFO hospital_management_system::handlers::triage::triage_handler - Uploading file for patient_id: 42, visit_id: 55, filename: Night.jpg
+2025-05-25T21:53:55.119382200+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-05-25T22:05:34.073607600+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-05-25T22:05:34.074741300+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-05-25T22:05:34.074809300+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-05-25T22:05:34.075771800+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-05-25T22:05:42.520845100+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-05-25T22:06:02.875600100+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-05-25T22:06:02.875875200+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-05-25T22:06:02.876006400+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-05-25T22:06:02.877133100+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-05-25T22:06:10.442515700+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("1601750b-0edb-4ed2-9c90-f99c2c3413b5")
+2025-05-25T22:06:10.442862300+07:00 INFO hospital_management_system::handlers::triage::triage_handler - filename : kyojuro-rengoku.jpg
+2025-05-25T22:06:10.442964800+07:00 INFO hospital_management_system::handlers::triage::triage_handler - ext : jpg
+2025-05-25T22:06:10.443089200+07:00 INFO hospital_management_system::handlers::triage::triage_handler - valid ext : true
+2025-05-25T22:06:10.458625700+07:00 INFO hospital_management_system::handlers::triage::triage_handler - Uploading file for patient_id: 42, visit_id: 55, filename: kyojuro-rengoku.jpg
+2025-05-25T22:11:27.102699900+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-05-25T22:11:54.353590600+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-05-25T22:11:54.353816200+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-05-25T22:11:54.353921900+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-05-25T22:11:54.354807300+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-05-25T22:12:08.417904700+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("955177e8-fa9d-4f87-95ac-6a07a14475ab")
+2025-05-25T22:12:08.418440+07:00 INFO hospital_management_system::handlers::triage::triage_handler - filename : kyojuro-rengoku.jpg
+2025-05-25T22:12:08.418603700+07:00 INFO hospital_management_system::handlers::triage::triage_handler - ext : jpg
+2025-05-25T22:12:08.418740500+07:00 INFO hospital_management_system::handlers::triage::triage_handler - valid ext : true
+2025-05-25T22:13:49.056253700+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-05-26T06:20:38.886194200+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-05-26T06:20:38.887583600+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-05-26T06:20:38.887766+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-05-26T06:20:38.889560900+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-05-26T06:21:01.938087100+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("1fba8263-3129-4eab-976d-0c534ce625d2")
+2025-05-26T06:21:01.938833800+07:00 INFO hospital_management_system::handlers::triage::triage_handler - filename : kyojuro-rengoku.jpg
+2025-05-26T06:21:01.939141900+07:00 INFO hospital_management_system::handlers::triage::triage_handler - ext : jpg
+2025-05-26T06:21:01.939454500+07:00 INFO hospital_management_system::handlers::triage::triage_handler - valid ext : true
+2025-05-26T06:21:17.014774200+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("74e0bb5e-fe60-438d-9b19-91465a531a93")
+2025-05-26T06:21:17.015409700+07:00 INFO hospital_management_system::handlers::triage::triage_handler - filename : Night.jpg
+2025-05-26T06:21:17.015680+07:00 INFO hospital_management_system::handlers::triage::triage_handler - ext : jpg
+2025-05-26T06:21:17.015818500+07:00 INFO hospital_management_system::handlers::triage::triage_handler - valid ext : true
+2025-05-26T06:21:17.017111100+07:00 INFO hospital_management_system::handlers::triage::triage_handler - Uploading file for patient_id: 42, visit_id: 55, filename: Night.jpg
+2025-05-26T06:21:26.259288700+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-05-26T06:23:11.562329500+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-05-26T06:23:11.562771900+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-05-26T06:23:11.562936800+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-05-26T06:23:11.564306200+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-05-26T06:23:21.060161100+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("f37ee75b-7f1e-4e58-ad2a-e62e8e87ccc7")
+2025-05-26T06:23:21.060908100+07:00 INFO hospital_management_system::handlers::triage::triage_handler - filename : kyojuro-rengoku.jpg
+2025-05-26T06:23:21.061261600+07:00 INFO hospital_management_system::handlers::triage::triage_handler - ext : jpg
+2025-05-26T06:23:21.061521700+07:00 INFO hospital_management_system::handlers::triage::triage_handler - valid ext : true
+2025-05-26T06:34:09.662849900+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-05-26T06:43:42.644571400+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-05-26T06:43:42.645164800+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-05-26T06:43:42.645482600+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-05-26T06:43:42.647456400+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-05-26T06:43:52.375229300+07:00 INFO hospital_management_system::middleware::error_handler_layer - request; method=POST uri=/triage/patient/42/55/upload request_id=RequestId("4be952f7-35f6-4d82-a51f-262bc955cd11")
+2025-05-26T06:43:52.378163400+07:00 INFO hospital_management_system::handlers::triage::triage_handler - Uploading file for patient_id: 42, visit_id: 55, filename: Night.jpg
+2025-05-26T06:45:44.901735400+07:00 INFO hospital_management_system - Shutdown signal received, exiting...

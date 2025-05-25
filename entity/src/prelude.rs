@@ -3,3 +3,4 @@
 pub use super::patients::Entity as Patients;
 pub use super::patients_visit_intent::Entity as PatientsVisitIntent;
 pub use super::queue_ticket::Entity as QueueTicket;
+pub use super::referral_documents::Entity as ReferralDocuments;

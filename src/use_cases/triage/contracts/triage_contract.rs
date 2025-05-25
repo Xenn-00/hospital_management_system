@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use aws_sdk_s3::Client;
 use bb8::Pool;
 use bb8_redis::RedisConnectionManager;
 use sea_orm::DatabaseConnection;
@@ -6,9 +7,10 @@ use sea_orm::DatabaseConnection;
 use crate::{
     dtos::triage::{
         create_triage_request::CreateTriageRequest,
+        referral_upload_metadata::ReferralUploadMetadata,
         response::{
-            CreateTriageResponse, TriagePatientCalled, TriagePatientCancel, TriageQueueComplete,
-            TriageQueueResponse, TriageQueueStatus,
+            CreateTriageResponse, ReferralUploadResponse, TriagePatientCalled, TriagePatientCancel,
+            TriageQueueComplete, TriageQueueResponse, TriageQueueStatus,
         },
     },
     error_handling::app_error::AppError,
@@ -49,4 +51,11 @@ pub trait TriageContracts {
         visit_type: String,
         queue_number: i32,
     ) -> Result<TriagePatientCancel, AppError>;
+    async fn handle_referral_upload(
+        db: &DatabaseConnection,
+        s3: &Client,
+        visit_id: i32,
+        patient_id: i32,
+        metadata: ReferralUploadMetadata,
+    ) -> Result<ReferralUploadResponse, AppError>;
 }

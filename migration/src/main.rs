@@ -13,20 +13,6 @@ async fn main() {
 
     let direct_url = app_config.database.direct_url;
 
-    // cli::run_cli_with_connection(Migrator, move |_| {
-    //     let url = direct_url.clone();
-    //     Box::pin(async move {
-    //         let mut options = ConnectOptions::new(url);
-    //         options
-    //             .max_connections(5)
-    //             .min_connections(1)
-    //             .connect_timeout(Duration::from_secs(10))
-    //             .idle_timeout(Duration::from_secs(300))
-    //             .sqlx_logging(true);
-    //         Database::connect(options).await
-    //     })
-    // })
-    // .await;
     let mut options = ConnectOptions::new(direct_url);
     options
         .max_connections(20)

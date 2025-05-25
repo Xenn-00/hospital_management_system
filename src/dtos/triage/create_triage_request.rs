@@ -25,8 +25,6 @@ pub struct CreateTriageRequest {
     pub known_allergies: Option<String>,
 
     pub visit_type: VisitType,
-    #[validate(custom(function = "validate_referral_required"))]
-    pub referral_document_url: Option<String>,
 }
 
 fn naive_date_time_to_naive_date<'de, D>(d: D) -> Result<NaiveDate, D::Error>
@@ -44,16 +42,6 @@ fn validate_phone(phone: &str) -> Result<(), ValidationError> {
     } else {
         Err(ValidationError::new("Invalid emergency contact phone"))
     }
-}
-
-fn validate_referral_required(referral: &str) -> Result<(), ValidationError> {
-    if referral.trim().is_empty() {
-        return Err(ValidationError::new(
-            "Referral URL must not be empty if provided",
-        ));
-    }
-
-    Ok(())
 }
 
 #[derive(Debug, Clone, Display)]

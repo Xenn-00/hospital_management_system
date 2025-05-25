@@ -9,11 +9,10 @@ pub struct Model {
     pub id: i32,
     pub patient_id: i32,
     pub visit_type: String,
-    pub referral_document_url: Option<String>,
     pub status: String,
-    pub referral_validated: String,
     pub created_at: DateTime,
     pub updated_at: DateTime,
+    pub referral_document_id: Option<i32>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -28,6 +27,14 @@ pub enum Relation {
     Patients,
     #[sea_orm(has_one = "super::queue_ticket::Entity")]
     QueueTicket,
+    #[sea_orm(
+        belongs_to = "super::referral_documents::Entity",
+        from = "Column::ReferralDocumentId",
+        to = "super::referral_documents::Column::Id",
+        on_update = "NoAction",
+        on_delete = "Cascade"
+    )]
+    ReferralDocuments,
 }
 
 impl Related<super::patients::Entity> for Entity {
@@ -39,6 +46,12 @@ impl Related<super::patients::Entity> for Entity {
 impl Related<super::queue_ticket::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::QueueTicket.def()
+    }
+}
+
+impl Related<super::referral_documents::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ReferralDocuments.def()
     }
 }
 

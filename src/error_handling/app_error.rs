@@ -143,3 +143,9 @@ impl From<MultipartError> for AppError {
         AppError::BadRequest(value.to_string())
     }
 }
+
+impl From<&AppError> for AppError {
+    fn from(value: &AppError) -> Self {
+        AppError::Internal(value.to_string())
+    }
+}

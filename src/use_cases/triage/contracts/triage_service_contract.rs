@@ -17,7 +17,7 @@ use crate::{
 };
 
 #[async_trait]
-pub trait TriageContracts {
+pub trait TriageServiceContracts {
     async fn perform_triage(
         db: &DatabaseConnection,
         payload: CreateTriageRequest,

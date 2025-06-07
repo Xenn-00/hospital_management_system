@@ -18,6 +18,7 @@ pub struct DatabaseConfig {
     pub url: String,
     pub driver: String,
     pub direct_url: String,
+    pub test_url: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]

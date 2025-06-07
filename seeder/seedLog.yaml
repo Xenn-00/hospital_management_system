@@ -1,0 +1,18 @@
+appenders:
+  stdout:
+    kind: console
+    encoder:
+      pattern: "{d} {l} {t} - {m}{n}"
+
+root:
+  level: info
+  appenders:
+    - stdout
+
+loggers:
+  sqlx::query:
+    level: warn
+  sea_orm:
+    level: warn
+  sea_orm::database:
+    level: warn

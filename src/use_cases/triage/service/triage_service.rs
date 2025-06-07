@@ -12,7 +12,7 @@ pub use crate::{
         create_triage_request::{CreateTriageRequest, VisitType},
         response::CreateTriageResponse,
     },
-    use_cases::triage::contracts::triage_contract::TriageContracts,
+    use_cases::triage::contracts::triage_service_contract::TriageServiceContracts,
 };
 use crate::{
     dtos::triage::{
@@ -24,14 +24,16 @@ use crate::{
     },
     error_handling::app_error::AppError,
     format_created_at, format_option_dt, parse_visit_type,
-    use_cases::triage::repo::triage_repo::{self, TriageRepo},
+    use_cases::triage::{
+        contracts::triage_repo_contract::TriageTraitRepo, repo::triage_repo::TriageRepo,
+    },
     utils::helpers::{get_cache_data, set_cache_data},
 };
 
 pub struct TriageService;
 
 #[async_trait]
-impl TriageContracts for TriageService {
+impl TriageServiceContracts for TriageService {
     async fn perform_triage(
         db: &DatabaseConnection,
         payload: CreateTriageRequest,
@@ -39,15 +41,13 @@ impl TriageContracts for TriageService {
         let txn = db.begin().await?;
 
         let patient =
-            <TriageRepo as triage_repo::TriageTraitRepo>::find_or_create_patient(&txn, &payload)
+            <TriageRepo as TriageTraitRepo>::find_or_create_patient(&txn, &payload).await?;
+
+        let visit_intent =
+            <TriageRepo as TriageTraitRepo>::create_visit_intent(&txn, patient.id, &payload)
                 .await?;
 
-        let visit_intent = <TriageRepo as triage_repo::TriageTraitRepo>::create_visit_intent(
-            &txn, patient.id, &payload,
-        )
-        .await?;
-
-        let queue_ticket = <TriageRepo as triage_repo::TriageTraitRepo>::create_queue_ticket(
+        let queue_ticket = <TriageRepo as TriageTraitRepo>::create_queue_ticket(
             &txn,
             visit_intent.id,
             payload.visit_type,
@@ -72,24 +72,21 @@ impl TriageContracts for TriageService {
     ) -> Result<TriageQueueResponse, AppError> {
         let normalize_type: Result<VisitType, AppError> = parse_visit_type!(visit_type);
 
-        let cache_key = format!("triage:queue:{}", normalize_type.as_ref().unwrap());
+        let cache_key = format!("triage:queue:{}", normalize_type.as_ref()?);
 
         if let Some(cached) = get_cache_data::<Vec<TriageQueueItem>>(&redis, &cache_key).await? {
             let result = TriageQueueResponse {
-                visit_type: normalize_type.unwrap().to_string(),
+                visit_type: normalize_type?.to_string(),
                 data: cached,
             };
             return Ok(result);
         }
 
-        let response = <TriageRepo as triage_repo::TriageTraitRepo>::get_queue(
-            &db,
-            normalize_type.as_ref().unwrap(),
-        )
-        .await?;
+        let response =
+            <TriageRepo as TriageTraitRepo>::get_queue(&db, normalize_type.as_ref()?).await?;
 
         let result = TriageQueueResponse {
-            visit_type: normalize_type.unwrap().to_string(),
+            visit_type: normalize_type?.to_string(),
             data: response.clone(),
         };
 
@@ -110,7 +107,7 @@ impl TriageContracts for TriageService {
         let normalize_type: Result<VisitType, AppError> = parse_visit_type!(visit_type);
         let cache_key = format!(
             "triage:queue:{}:id:{}",
-            normalize_type.as_ref().unwrap(),
+            normalize_type.as_ref()?,
             &queue_number
         );
 
@@ -118,10 +115,10 @@ impl TriageContracts for TriageService {
             return Ok(cached);
         }
 
-        let response = <TriageRepo as triage_repo::TriageTraitRepo>::get_status_by_queue_number(
+        let response = <TriageRepo as TriageTraitRepo>::get_status_by_queue_number(
             &db,
             queue_number,
-            normalize_type.unwrap(),
+            normalize_type?,
         )
         .await?;
 
@@ -148,7 +145,7 @@ impl TriageContracts for TriageService {
         let normalize_type: Result<VisitType, AppError> = parse_visit_type!(visit_type);
         let cache_key = format!(
             "call:queue:{}:id:{}",
-            normalize_type.as_ref().unwrap(),
+            normalize_type.as_ref()?,
             &queue_number
         );
 
@@ -158,14 +155,11 @@ impl TriageContracts for TriageService {
 
         let txn = db.begin().await?;
 
-        let response = <TriageRepo as triage_repo::TriageTraitRepo>::call_patient(
-            &txn,
-            queue_number,
-            normalize_type.unwrap(),
-        )
-        .await?;
+        let response =
+            <TriageRepo as TriageTraitRepo>::call_patient(&txn, queue_number, normalize_type?)
+                .await?;
 
-        txn.commit().await.unwrap();
+        txn.commit().await?;
 
         let formatted = format_option_dt!(response.called_at);
 
@@ -189,7 +183,7 @@ impl TriageContracts for TriageService {
         let normalize_type: Result<VisitType, AppError> = parse_visit_type!(visit_type);
         let cache_key = format!(
             "complete:queue:{}:id:{}",
-            normalize_type.as_ref().unwrap(),
+            normalize_type.as_ref()?,
             &queue_number
         );
 
@@ -199,14 +193,14 @@ impl TriageContracts for TriageService {
 
         let txn = db.begin().await?;
 
-        let response = <TriageRepo as triage_repo::TriageTraitRepo>::triage_queue_complete(
+        let response = <TriageRepo as TriageTraitRepo>::triage_queue_complete(
             &txn,
             queue_number,
-            normalize_type.unwrap(),
+            normalize_type?,
         )
         .await?;
 
-        txn.commit().await.unwrap();
+        txn.commit().await?;
 
         let formatted_called_at = format_option_dt!(response.called_at);
         let formatted_done_at = format_option_dt!(response.done_at);
@@ -233,25 +227,25 @@ impl TriageContracts for TriageService {
         let normalize_type: Result<VisitType, AppError> = parse_visit_type!(visit_type);
         let cache_key = format!(
             "cancel:queue:{}:id:{}",
-            normalize_type.as_ref().unwrap(),
+            normalize_type.as_ref()?,
             &queue_number
         );
         if let Some(cached) = get_cache_data::<TriagePatientCancel>(&redis, &cache_key).await? {
             return Ok(cached);
         };
 
-        let ticket = <TriageRepo as triage_repo::TriageTraitRepo>::get_status_by_queue_number(
+        let ticket = <TriageRepo as TriageTraitRepo>::get_status_by_queue_number(
             &db,
             queue_number.clone(),
-            normalize_type.clone().unwrap(),
+            normalize_type.clone()?,
         )
         .await?;
 
         let txn = db.begin().await?;
-        let response = <TriageRepo as triage_repo::TriageTraitRepo>::cancel_patient_queue(
+        let response = <TriageRepo as TriageTraitRepo>::cancel_patient_queue(
             &txn,
             queue_number.clone(),
-            &normalize_type.unwrap(),
+            &normalize_type?,
         )
         .await?;
 
@@ -295,7 +289,7 @@ impl TriageContracts for TriageService {
 
         let txn = db.begin().await?;
 
-        let response = <TriageRepo as triage_repo::TriageTraitRepo>::upload_referral_docs(
+        let response = <TriageRepo as TriageTraitRepo>::upload_referral_docs(
             &txn,
             filename,
             visit_id,

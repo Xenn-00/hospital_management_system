@@ -16,9 +16,8 @@ use crate::{
         response::TriageQueueItem,
     },
     error_handling::app_error::AppError,
+    use_cases::triage::contracts::triage_repo_contract::TriageTraitRepo,
 };
-
-pub use super::triage_repo_contract::TriageTraitRepo;
 
 pub struct TriageRepo;
 

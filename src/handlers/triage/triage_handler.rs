@@ -19,7 +19,7 @@ use crate::{
     infra::api::ApiResponse,
     middleware::request_middleware::RequestId,
     state::AppState,
-    use_cases::triage::service::triage_service::{self, TriageService},
+    use_cases::triage::service::triage_service::{TriageService, TriageServiceContracts},
     utils::helpers::read_bytes_from_multipart_field,
 };
 
@@ -32,8 +32,7 @@ pub async fn triage_patient(
 
     let db = &state.db;
 
-    let result =
-        <TriageService as triage_service::TriageContracts>::perform_triage(db, payload).await?;
+    let result = <TriageService as TriageServiceContracts>::perform_triage(db, payload).await?;
 
     let response = ApiResponse {
         message: "Triage successful".to_string(),
@@ -53,8 +52,7 @@ pub async fn triage_queue(
     let redis = &state.redis;
 
     let result =
-        <TriageService as triage_service::TriageContracts>::get_triage_queue(db, redis, visit_type)
-            .await?;
+        <TriageService as TriageServiceContracts>::get_triage_queue(db, redis, visit_type).await?;
 
     let response = ApiResponse {
         message: "Get triage queue successful".to_string(),
@@ -73,7 +71,7 @@ pub async fn triage_queue_status(
     let db = &state.db;
     let redis = &state.redis;
 
-    let result = <TriageService as triage_service::TriageContracts>::get_triage_queue_status_by_id(
+    let result = <TriageService as TriageServiceContracts>::get_triage_queue_status_by_id(
         db,
         redis,
         visit_type,
@@ -98,7 +96,7 @@ pub async fn triage_call_patient(
     let db = &state.db;
     let redis = &state.redis;
 
-    let result = <TriageService as triage_service::TriageContracts>::call_patient(
+    let result = <TriageService as TriageServiceContracts>::call_patient(
         db,
         redis,
         visit_type,
@@ -124,7 +122,7 @@ pub async fn triage_complete(
     let db = &state.db;
     let redis = &state.redis;
 
-    let result = <TriageService as triage_service::TriageContracts>::triage_complete(
+    let result = <TriageService as TriageServiceContracts>::triage_complete(
         db,
         redis,
         visit_type,
@@ -150,7 +148,7 @@ pub async fn triage_patient_cancel(
     let db = &state.db;
     let redis = &state.redis;
 
-    let result = <TriageService as triage_service::TriageContracts>::cancel_patient_queue(
+    let result = <TriageService as TriageServiceContracts>::cancel_patient_queue(
         db,
         redis,
         visit_type,
@@ -227,7 +225,7 @@ pub async fn triage_referral_document_upload(
         patient_id, visit_id, &meta.original_filename,
     );
 
-    let result = <TriageService as triage_service::TriageContracts>::handle_referral_upload(
+    let result = <TriageService as TriageServiceContracts>::handle_referral_upload(
         db, s3, visit_id, patient_id, meta,
     )
     .await?;

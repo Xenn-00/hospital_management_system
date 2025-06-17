@@ -149,7 +149,7 @@ impl TriageServiceContracts for TriageService {
             &queue_number
         );
 
-        if let Some(cached) = get_cache_data::<TriagePatientCalled>(&redis, &cache_key).await? {
+        if let Ok(Some(cached)) = get_cache_data::<TriagePatientCalled>(&redis, &cache_key).await {
             return Ok(cached);
         }
 
@@ -166,10 +166,11 @@ impl TriageServiceContracts for TriageService {
         let result = TriagePatientCalled {
             queue_number: response.queue_number,
             queue_type: response.queue_type,
+            status: response.status,
             called_at: formatted,
         };
 
-        set_cache_data(&redis, &cache_key, &result, 300).await?;
+        set_cache_data(&redis, &cache_key, &result, 30).await?;
 
         Ok(result)
     }

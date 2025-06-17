@@ -21,6 +21,10 @@ mod m20250528_061735_create_table_doctor_schedule;
 mod m20250528_062543_create_table_nurse_polyclinic_assignment;
 mod m20250528_144437_alter_table_department;
 mod m20250529_023225_alter_table_department_head_id_null;
+mod m20250612_032446_alter_table_employee;
+mod m20250612_072057_alter_table_employee_gender;
+mod m20250612_072813_alter_table_employee_gender_not_null;
+mod m20250616_092203_create_table_queue_number_tracker;
 
 pub struct Migrator;
 
@@ -49,6 +53,10 @@ impl MigratorTrait for Migrator {
             Box::new(m20250528_062543_create_table_nurse_polyclinic_assignment::Migration),
             Box::new(m20250529_023225_alter_table_department_head_id_null::Migration),
             Box::new(m20250528_144437_alter_table_department::Migration),
+            Box::new(m20250612_032446_alter_table_employee::Migration),
+            Box::new(m20250612_072057_alter_table_employee_gender::Migration),
+            Box::new(m20250612_072813_alter_table_employee_gender_not_null::Migration),
+            Box::new(m20250616_092203_create_table_queue_number_tracker::Migration),
         ]
     }
 }

@@ -4,7 +4,7 @@ macro_rules! parse_visit_type {
         match $visit_type.to_lowercase().as_str() {
             "bpjs" => Ok(VisitType::BPJS),
             "common" => Ok(VisitType::COMMON),
-            other => Err(AppError::BadRequest(format!("Unknown visit type: {}", other)).into()),
+            _ => Err(AppError::BadRequest(format!("Unknown visit type: {}", $visit_type)).into()),
         }
     };
 }

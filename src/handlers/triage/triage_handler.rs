@@ -3,7 +3,6 @@ use axum::{
     extract::{Multipart, Path, State},
 };
 
-use log::info;
 use validator::Validate;
 
 use crate::{
@@ -17,7 +16,7 @@ use crate::{
     },
     error_handling::app_error::AppError,
     infra::api::ApiResponse,
-    middleware::request_middleware::RequestId,
+    middleware::fn_middleware::request_middleware::RequestId,
     state::AppState,
     use_cases::triage::service::triage_service::{TriageService, TriageServiceContracts},
     utils::helpers::read_bytes_from_multipart_field,
@@ -219,11 +218,6 @@ pub async fn triage_referral_document_upload(
             ));
         }
     };
-
-    info!(
-        "Uploading file for patient_id: {}, visit_id: {}, filename: {}",
-        patient_id, visit_id, &meta.original_filename,
-    );
 
     let result = <TriageService as TriageServiceContracts>::handle_referral_upload(
         db, s3, visit_id, patient_id, meta,

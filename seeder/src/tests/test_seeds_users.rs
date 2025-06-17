@@ -25,7 +25,7 @@ async fn test_seeds_users_success() {
 
         assert!(result.is_ok(), "Seeding users failed: {:?}", result.err());
 
-        let users_count = entity::user::Entity::find()
+        let users_count = entity::users::Entity::find()
             .count(&txn)
             .await
             .expect("Failed to count users");

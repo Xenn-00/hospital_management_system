@@ -11,6 +11,15 @@ pub struct AppConfig {
     pub redis: RedisConfig,
     pub app: Application,
     pub s3: S3Config,
+    pub twilio: Twilio,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct Twilio {
+    pub account_sid: String,
+    pub auth_token: String,
+    pub whatsapp_sandbox: String,
+    pub my_whatsapp: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]

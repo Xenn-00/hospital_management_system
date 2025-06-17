@@ -1,11 +1,18 @@
+use argon2::{
+    Argon2, Params, PasswordHash, PasswordHasher, PasswordVerifier,
+    password_hash::{SaltString, rand_core::OsRng},
+};
 use axum::extract::multipart::Field;
 use bb8::Pool;
 use bb8_redis::RedisConnectionManager;
 use futures::{StreamExt, TryStreamExt};
 use image::ImageReader;
+use rand::Rng;
+use reqwest::Client;
 use serde::de::DeserializeOwned;
+use tracing::error;
 
-use crate::error_handling::app_error::AppError;
+use crate::{error_handling::app_error::AppError, infra::config::AppConfig};
 
 use redis::AsyncCommands;
 
@@ -84,4 +91,74 @@ pub async fn read_bytes_from_multipart_field<'a>(
     }
 
     Ok(bytes)
+}
+
+pub fn verify_password(password: &str, hashed: &str) -> Result<bool, AppError> {
+    let parsed_hash = PasswordHash::new(hashed).map_err(|e| {
+        error!("Password hash parse failed: {:?}", e);
+        AppError::AuthError(format!("Username or password is incorrect"))
+    })?;
+
+    let is_valid = Argon2::default()
+        .verify_password(password.as_bytes(), &parsed_hash)
+        .is_ok();
+
+    Ok(is_valid)
+}
+
+pub fn hash_password(password: &str) -> Result<String, AppError> {
+    let params = Params::new(65536, 3, 1, Some(32))
+        .map_err(|e| AppError::Internal(format!("Failed to create Argon2 params: {e}")))?;
+    let argon2 = Argon2::new(argon2::Algorithm::Argon2id, argon2::Version::V0x13, params);
+
+    let salt = SaltString::generate(&mut OsRng);
+    let password_hash = argon2.hash_password(password.as_bytes(), &salt);
+
+    match password_hash {
+        Ok(hash) => Ok(hash.to_string()),
+
+        Err(e) => Err(AppError::Internal(format!(
+            "Failed to hash password: {}",
+            e
+        ))),
+    }
+}
+
+pub fn generate_otp() -> String {
+    let mut rng = rand::rng();
+    format!("{:06}", rng.random_range(0..999999))
+}
+
+pub async fn send_otp_via_whatsapp(to: &str, otp: &str) -> Result<(), AppError> {
+    let to_whatsapp = format!("whatsapp:{}", to); // since I'm still in dev, still using my test number
+
+    let config = AppConfig::from_yaml("application.yaml").expect("Failed to fetch app config");
+
+    let account_sid = config.twilio.account_sid;
+    let auth_token = config.twilio.auth_token;
+    let whatsapp_sandbox = config.twilio.whatsapp_sandbox; // indicates still in dev and not have enough money 😭
+
+    let client = Client::new();
+
+    let url = format!(
+        "https://api.twilio.com/2010-04-01/Accounts/{}/Messages.json",
+        account_sid
+    );
+
+    let res = client
+        .post(&url)
+        .basic_auth(account_sid, Some(auth_token))
+        .form(&[
+            ("To", to_whatsapp.as_str()),
+            ("From", whatsapp_sandbox.as_str()),
+            ("Body", &format!("This is your OTP: {}", otp)),
+        ])
+        .send()
+        .await
+        .map_err(|e| AppError::Internal(format!("Failed to send message, {}", e)))?;
+
+    if res.status().is_success() {
+        println!("OTP sended to {}", to)
+    }
+    Ok(())
 }

@@ -10,7 +10,7 @@ use std::collections::HashMap;
 use entity::{
     departments, doctor_schedules, doctors, employee_position, employees, nurses,
     nurses_polyclinic_assignments, polyclinic, position_titles, rooms,
-    user::{self, Role},
+    users::{self, Role},
 };
 use sea_orm::ActiveValue::Set;
 
@@ -37,7 +37,7 @@ pub fn generate_department(department_list: Vec<&str>) -> Vec<departments::Activ
         .collect()
 }
 
-pub fn generate_employee(n: usize) -> Vec<employees::ActiveModel> {
+pub fn generate_employee(n: usize, superadmin_id: i32) -> Vec<employees::ActiveModel> {
     let mut rng = rand::rng();
 
     // Department distribution
@@ -75,41 +75,46 @@ pub fn generate_employee(n: usize) -> Vec<employees::ActiveModel> {
     dept_pool.shuffle(&mut rng);
     status_pool.shuffle(&mut rng);
 
-    (0..n)
-        .map(|i| {
-            let binding_dpt = "DPT01".to_string();
-            let dept_code = dept_pool.get(i % dept_pool.len()).unwrap_or(&binding_dpt);
-            let binding_status = "Permanent".to_string();
-            let status = status_pool
-                .get(i % status_pool.len())
-                .unwrap_or(&binding_status);
+    let mut employees = Vec::new();
 
-            let birth_year = rng.random_range(1970..=1995);
-            let birth_month = rng.random_range(1..=12);
-            let hire_year = rng.random_range(2015..=2023);
+    for i in 0..n {
+        let binding_dpt = "DPT01".to_string();
+        let dept_code = dept_pool.get(i % dept_pool.len()).unwrap_or(&binding_dpt);
+        let binding_status = "Permanent".to_string();
+        let status = status_pool
+            .get(i % status_pool.len())
+            .unwrap_or(&binding_status);
 
-            employees::ActiveModel {
-                full_name: Set(format!("Employee {}", i + 1)),
-                email: Set(format!("employee{}@test.com", i + 1)),
-                nip: Set(Some(format!(
-                    "{:04}{:02}{:02}2000{:02}{}{:03}",
-                    birth_year,
-                    birth_month,
-                    rng.random_range(1..=28),
-                    birth_month,
-                    rng.random_range(1..=2),
-                    i + 1
-                ))),
-                phone: Set(format!("+12345678{}90", i + 1)),
-                address: Set(format!("Address {}, City, Country", i + 1)),
-                department_code: Set(dept_code.to_string()),
-                birth_date: Set(NaiveDate::from_ymd_opt(birth_year, 1, 1).unwrap()),
-                employment_status: Set(status.to_string()),
-                hire_date: Set(NaiveDate::from_ymd_opt(hire_year, 1, 1).unwrap()),
-                ..Default::default()
-            }
-        })
-        .collect()
+        let birth_year = rng.random_range(1970..=1995);
+        let birth_month = rng.random_range(1..=12);
+        let birth_day = rng.random_range(1..=28);
+        let hire_year = rng.random_range(2015..=2023);
+
+        employees.push(employees::ActiveModel {
+            full_name: Set(format!("Employee {}", i + 1)),
+            email: Set(format!("employee{}@test.com", i + 1)),
+            created_by: Set(Some(superadmin_id)),
+            gender: Set(rng.random_range(1..=2)),
+            nip: Set(Some(format!(
+                "{:04}{:02}{:02}2000{:02}{}{:03}",
+                birth_year,
+                birth_month,
+                birth_day,
+                birth_month,
+                rng.random_range(1..=2),
+                i + 1
+            ))),
+            phone: Set(format!("+12345678{}90", i + 1)),
+            address: Set(format!("Address {}, City, Country", i + 1)),
+            department_code: Set(dept_code.to_string()),
+            birth_date: Set(NaiveDate::from_ymd_opt(birth_year, birth_month, birth_day).unwrap()),
+            employment_status: Set(status.to_string()),
+            hire_date: Set(NaiveDate::from_ymd_opt(hire_year, 1, 1).unwrap()),
+            ..Default::default()
+        });
+    }
+
+    employees
 }
 
 pub fn generate_doctor(
@@ -334,7 +339,7 @@ pub fn generate_nurses_polyclinic_assignments(
     assignments
 }
 
-pub fn generate_users(employee_ids_and_dept: Vec<(i32, String)>) -> Vec<user::ActiveModel> {
+pub fn generate_users(employees: Vec<employees::Model>) -> Vec<users::ActiveModel> {
     let mut rng = rand::rng();
     let now = Utc::now();
 
@@ -360,9 +365,32 @@ pub fn generate_users(employee_ids_and_dept: Vec<(i32, String)>) -> Vec<user::Ac
         argon2::Version::V0x13,
         Params::new(8, 1, 1, None).unwrap(),
     );
-    for (id, dept) in employee_ids_and_dept {
-        let role = dept_to_role(dept);
-        let username = format!("user_{}", id);
+    for e in employees {
+        if e.email == "superadmin@admin.com" {
+            let password_raw = format!("your_superadmin");
+            let salt = SaltString::generate(&mut OsRng);
+
+            let password_hash = argon2
+                .hash_password(password_raw.as_bytes(), &salt)
+                .expect("Failed to hash password")
+                .to_string();
+
+            users.push(users::ActiveModel {
+                employee_id: Set(e.id),
+                password: Set(password_hash),
+                username: Set(format!("superadmin")),
+                role: Set(Role::Superadmin),
+                last_login: Set(Some(
+                    (now - Duration::days(rng.random_range(1..=30))).naive_utc(),
+                )),
+                is_active: Set(true),
+                ..Default::default()
+            });
+
+            continue;
+        }
+        let role = dept_to_role(e.department_code);
+        let username = format!("user_{}", e.id);
         let password_raw = format!("{}{}", username, role.to_string().to_lowercase());
 
         let salt = SaltString::generate(&mut OsRng);
@@ -372,8 +400,8 @@ pub fn generate_users(employee_ids_and_dept: Vec<(i32, String)>) -> Vec<user::Ac
             .expect("Failed to hash password")
             .to_string();
 
-        users.push(user::ActiveModel {
-            employee_id: Set(id),
+        users.push(users::ActiveModel {
+            employee_id: Set(e.id),
             password: Set(password_hash),
             username: Set(username),
             role: Set(role),

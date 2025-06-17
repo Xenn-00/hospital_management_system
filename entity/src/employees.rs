@@ -20,6 +20,8 @@ pub struct Model {
     pub employment_status: String,
     pub department_code: String,
     pub created_at: DateTime,
+    pub created_by: Option<i32>,
+    pub gender: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -36,10 +38,18 @@ pub enum Relation {
     Doctors,
     #[sea_orm(has_many = "super::employee_position::Entity")]
     EmployeePosition,
+    #[sea_orm(
+        belongs_to = "Entity",
+        from = "Column::CreatedBy",
+        to = "Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    SelfRef,
     #[sea_orm(has_one = "super::nurses::Entity")]
     Nurses,
-    #[sea_orm(has_one = "super::user::Entity")]
-    User,
+    #[sea_orm(has_one = "super::users::Entity")]
+    Users,
 }
 
 impl Related<super::departments::Entity> for Entity {
@@ -66,9 +76,9 @@ impl Related<super::nurses::Entity> for Entity {
     }
 }
 
-impl Related<super::user::Entity> for Entity {
+impl Related<super::users::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::User.def()
+        Relation::Users.def()
     }
 }
 

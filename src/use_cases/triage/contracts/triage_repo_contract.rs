@@ -21,6 +21,10 @@ pub trait TriageTraitRepo {
         patient_id: i32,
         payload: &CreateTriageRequest,
     ) -> Result<patients_visit_intent::Model, AppError>;
+    async fn get_next_queue_number(
+        txn: &DatabaseTransaction,
+        visit_type: &VisitType,
+    ) -> Result<i32, AppError>;
     async fn create_queue_ticket(
         txn: &DatabaseTransaction,
         intent_id: i32,

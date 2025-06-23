@@ -4,7 +4,7 @@ use sea_orm::{DatabaseTransaction, DbErr, EntityTrait, PaginatorTrait};
 
 use crate::helpers::generate_room;
 
-pub async fn seed_rooms(txn: &DatabaseTransaction) -> Result<(), DbErr> {
+pub async fn seeds_rooms(txn: &DatabaseTransaction) -> Result<(), DbErr> {
     info!("🚀 Seeding rooms...");
     let count = rooms::Entity::find().count(txn).await?;
     if count > 0 {

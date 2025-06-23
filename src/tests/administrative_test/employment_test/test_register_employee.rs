@@ -34,10 +34,11 @@ async fn test_employee_register() {
         TestContext::clean_records(&ctx.db).await;
 
         let test_state = AppState {
-            db: ctx.db.clone(),
-            redis: ctx.redis.clone(),
-            s3: ctx.s3.clone(),
-            jwt_keys: ctx.jwt_keys.clone(),
+            db: ctx.db.clone().into(),
+            redis: ctx.redis.clone().into(),
+            s3: ctx.s3.clone().into(),
+            jwt_keys: ctx.jwt_keys.clone().into(),
+            twilio: ctx.twilio.into(),
         };
 
         let login = admin_login(test_state.clone()).await;

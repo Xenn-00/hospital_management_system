@@ -908,3 +908,350 @@
 2025-06-14T20:34:59.694583200+07:00 INFO hospital_management_system - Connected to the s3 successfully
 2025-06-14T20:34:59.695792800+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
 2025-06-14T20:35:02.047074700+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-20T15:02:51.609928700+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-06-20T15:02:51.610501500+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-06-20T15:02:51.610580200+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-06-20T15:02:51.610958800+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-20T15:03:20.128812900+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/login request_id=RequestId("78178b0b-7a7f-4b2e-8f89-6d8637dbbbf8")
+2025-06-20T15:03:20.128957400+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/auth/login request_id=RequestId("78178b0b-7a7f-4b2e-8f89-6d8637dbbbf8")
+2025-06-20T15:03:23.340446400+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/login request_id=RequestId("f28b15da-7b5b-4416-b50a-872aec83abfa")
+2025-06-20T15:03:23.340563700+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/auth/login request_id=RequestId("f28b15da-7b5b-4416-b50a-872aec83abfa")
+2025-06-20T15:04:21.138242400+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=GET uri=/api/v1/triage/queue/bpjs request_id=RequestId("c400fb18-1967-4ed3-9b4f-36fc298937a4")
+2025-06-20T15:04:21.138537300+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/queue/bpjs
+2025-06-20T15:04:23.500659600+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=GET uri=/api/v1/triage/queue/bpjs request_id=RequestId("9967ad35-ffc4-48b8-b7cd-087f9d9418b7")
+2025-06-20T15:04:23.500833700+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/queue/bpjs
+2025-06-20T15:04:24.898148100+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=GET uri=/api/v1/triage/queue/bpjs request_id=RequestId("a3a8b396-4e92-4910-a074-a80597f10e1a")
+2025-06-20T15:04:24.898350500+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/queue/bpjs
+2025-06-20T15:04:31.688490500+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=GET uri=/api/v1/triage/queue/common request_id=RequestId("07c3b53e-86ad-49d0-bb17-5be8b95fdccf")
+2025-06-20T15:04:31.688629+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/queue/common
+2025-06-20T15:04:34.283179+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=GET uri=/api/v1/triage/queue/common request_id=RequestId("6b81a915-a51c-4f5c-97fc-0273efcd72f9")
+2025-06-20T15:04:34.283381500+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/queue/common
+2025-06-20T15:10:12.732103+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/employee/register request_id=RequestId("5753feb3-2f32-4064-b284-e16db70db634")
+2025-06-20T15:10:12.732219200+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-20T15:10:30.565780+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/employee/register request_id=RequestId("bba8f0be-6c56-4c73-9ecd-843e7d09a850")
+2025-06-20T15:10:30.565904500+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-20T15:11:51.778109600+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-20T15:15:37.105191800+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-06-20T15:15:37.105347800+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-06-20T15:15:37.105404600+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-06-20T15:15:37.105994300+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-20T15:17:23.545442700+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-20T15:20:00.775570+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-06-20T15:20:00.775694200+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-06-20T15:20:00.775789900+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-06-20T15:20:00.776434100+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-20T15:22:03.404384100+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("47153923-1b65-4126-8683-a0ba29cb150f")
+2025-06-20T15:22:03.404609600+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/auth/register
+2025-06-20T15:22:47.374859300+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-20T15:25:26.076994+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-06-20T15:25:26.077135+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-06-20T15:25:26.077282600+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-06-20T15:25:26.078043900+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-20T15:25:28.604032200+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("da0a4c8d-3132-4928-b0de-0c2253913c33")
+2025-06-20T15:25:28.604255300+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/auth/register
+2025-06-20T15:26:21.253077400+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-20T15:26:52.591839600+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-06-20T15:26:52.591983700+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-06-20T15:26:52.592146700+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-06-20T15:26:52.592914+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-20T15:26:56.105779500+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("9f0560df-5fc4-4fe4-b803-916f6636490d")
+2025-06-20T15:26:56.105979800+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/auth/register
+2025-06-20T15:33:58.130094800+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("2d6baf2a-68ab-4857-984e-8cff39fd3435")
+2025-06-20T15:33:58.130263300+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/auth/register
+2025-06-20T15:33:58.145357600+07:00 ERROR hospital_management_system::error_handling::app_error - DB error: Query(SqlxError(ColumnNotFound("employee_id")))
+2025-06-20T15:37:00.283868700+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/employee/register request_id=RequestId("00569437-7bb5-4a1c-98fd-277f500c4918")
+2025-06-20T15:37:00.284021200+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-20T15:37:47.755682600+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/employee/register request_id=RequestId("269a9f76-d339-4fe7-8f86-3bca2bfb59d6")
+2025-06-20T15:37:47.755837800+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-20T15:37:55.614529900+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("b57af215-fdab-4cc3-b844-f8954e1703c0")
+2025-06-20T15:37:55.614682400+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/auth/register
+2025-06-20T15:38:25.949368600+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-20T15:43:54.711926700+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-06-20T15:43:54.712370700+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-06-20T15:43:54.712541+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-06-20T15:43:54.713523400+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-20T15:44:03.606118700+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/employee/register request_id=RequestId("a557a63b-6b2b-416b-b043-1931a2d63291")
+2025-06-20T15:44:03.606414400+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-20T15:44:10.447999900+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("77ac491d-8837-4bca-992a-a9a0dbb0f9dc")
+2025-06-20T15:44:10.448163100+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/auth/register
+2025-06-20T15:49:07.256681100+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-20T15:51:59.160316300+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-06-20T15:51:59.160468700+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-06-20T15:51:59.160573700+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-06-20T15:51:59.162165300+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-20T15:52:23.757143900+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/employee/register request_id=RequestId("742bb329-4a32-42d3-a8ae-819d9164fdb7")
+2025-06-20T15:52:23.757370200+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-20T15:52:32.935531900+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("d4a651d0-6d0e-4880-9558-2f88a0b4680f")
+2025-06-20T15:52:32.935782800+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/auth/register
+2025-06-20T15:58:40.475652600+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-20T16:03:15.262385+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-06-20T16:03:15.262603300+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-06-20T16:03:15.262773600+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-06-20T16:03:15.264179700+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-20T16:03:20.258138900+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/employee/register request_id=RequestId("1af23493-90bf-49d6-b5de-3f331148e2ee")
+2025-06-20T16:03:20.258424400+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-20T16:03:24.382157100+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("9d4e12c2-78a5-4d32-beed-0a5907b47411")
+2025-06-20T16:03:24.382318200+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/auth/register
+2025-06-20T16:03:33.884065700+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("78722fee-cef3-46c9-95a9-665354c8c7e6")
+2025-06-20T16:03:33.884318200+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/auth/register
+2025-06-20T16:03:40.551966300+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("e7345fbe-a9a7-413e-afca-a2aac0ed7a45")
+2025-06-20T16:03:40.552262900+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/auth/register
+2025-06-20T16:04:26.133238100+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-20T16:06:32.812485900+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-06-20T16:06:32.812690300+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-06-20T16:06:32.812823400+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-06-20T16:06:32.813976600+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-20T16:06:33.823549100+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/employee/register request_id=RequestId("1a845982-9c7f-4318-9325-87301a8e8b72")
+2025-06-20T16:06:33.823832600+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-20T16:06:41.638714700+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("58b71643-7f62-4c60-8337-2160acdb07ac")
+2025-06-20T16:06:41.638919200+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/auth/register
+2025-06-20T16:06:57.955292600+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-22T15:29:22.763854900+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-06-22T15:29:22.764460+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-06-22T15:29:22.764477300+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-06-22T15:29:22.764976800+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-22T15:32:28.436062700+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-22T15:41:50.210984700+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-06-22T15:41:50.211492100+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-06-22T15:41:50.211555900+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-06-22T15:41:50.212470400+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-22T15:41:59.641594300+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-22T15:42:22.901453+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-06-22T15:42:22.901564800+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-06-22T15:42:22.901632200+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-06-22T15:42:22.904803200+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-22T15:42:42.055512900+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-22T15:49:48.699664400+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-06-22T15:49:48.699862800+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-06-22T15:49:48.699999900+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-06-22T15:49:48.700707500+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-22T15:49:52.213822900+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-22T16:00:00.022591+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-06-22T16:00:00.022748400+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-06-22T16:00:00.022917100+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-06-22T16:00:00.023605800+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-22T16:00:01.530873500+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-22T16:00:57.582714500+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-06-22T16:00:57.582775100+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-06-22T16:00:57.582783700+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-06-22T16:00:57.583141700+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-22T16:01:07.377927500+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-22T16:01:35.118146500+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-06-22T16:01:35.118178+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-06-22T16:01:35.118186200+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-06-22T16:01:35.119070300+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-22T16:02:38.578577900+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-22T16:08:49.520530800+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-06-22T16:08:49.520663200+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-06-22T16:08:49.520764800+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-06-22T16:08:49.521521400+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-22T16:08:51.872864400+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/login request_id=RequestId("d3859988-b572-46de-a76c-bd50bf9f9c27")
+2025-06-22T16:08:51.872985800+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/auth/login
+2025-06-22T16:10:21.993016100+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-22T16:13:00.349947300+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-06-22T16:13:00.350074300+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-06-22T16:13:00.350196800+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-06-22T16:13:00.350834600+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-22T16:13:02.260797900+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/login request_id=RequestId("36b0fd3b-21d2-4c4b-a49f-32fc9f373503")
+2025-06-22T16:13:02.260974300+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/auth/login
+2025-06-22T16:13:04.076724400+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/login request_id=RequestId("3e47f6d3-0948-40df-bcee-f92ca60d55b8")
+2025-06-22T16:13:04.076898800+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/auth/login
+2025-06-22T16:13:05.694834100+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/login request_id=RequestId("0c80afd7-e825-4b2d-a623-72e5b2b7dbf9")
+2025-06-22T16:13:05.695069900+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/auth/login
+2025-06-22T16:13:12.408033200+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-22T16:14:30.232902200+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-06-22T16:14:30.233136700+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-06-22T16:14:30.233326100+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-06-22T16:14:30.234173800+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-22T16:14:32.326393200+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/login request_id=RequestId("460971ad-34ce-46dd-a41b-b25c10fc03c7")
+2025-06-22T16:14:32.326650400+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/auth/login
+2025-06-22T16:14:33.298875900+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/login request_id=RequestId("c4abcff2-8a23-4a2f-b1a5-1e0ee0525e7f")
+2025-06-22T16:14:33.299037900+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/auth/login
+2025-06-22T16:14:34.839805800+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/login request_id=RequestId("88efa6ef-b433-4141-a76f-a81f0581e84c")
+2025-06-22T16:14:34.839987100+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/auth/login
+2025-06-22T16:14:49.879193400+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-22T16:15:25.065452100+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-06-22T16:15:25.065568+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-06-22T16:15:25.065662400+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-06-22T16:15:25.066473800+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-22T16:15:26.384494200+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/login request_id=RequestId("b789dd3d-73f6-4ff0-af09-f85e278dbc8b")
+2025-06-22T16:15:26.384687500+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/auth/login
+2025-06-22T16:15:29.588672500+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-22T16:16:26.672233500+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-06-22T16:16:26.672412900+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-06-22T16:16:26.672536100+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-06-22T16:16:26.673465500+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-22T16:16:28.436925600+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/login request_id=RequestId("6eada174-b3f7-4367-8cfd-515e226e5a6a")
+2025-06-22T16:16:28.437149500+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/auth/login request_id=RequestId("6eada174-b3f7-4367-8cfd-515e226e5a6a")
+2025-06-22T16:16:35.487040100+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-22T16:23:57.634637400+07:00 INFO hospital_management_system - Connected to the database successfully
+2025-06-22T16:23:57.634778700+07:00 INFO hospital_management_system - Connected to the redis successfully
+2025-06-22T16:23:57.634870600+07:00 INFO hospital_management_system - Connected to the s3 successfully
+2025-06-22T16:23:57.635674300+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-22T16:23:59.647106600+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/login request_id=RequestId("57b3096d-3ce8-4a21-b11c-591505e83676")
+2025-06-22T16:24:00.998273100+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/login request_id=RequestId("cd0565e6-f172-44ea-85cd-22d88b5c87a0")
+2025-06-22T16:24:05.165294500+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-22T21:48:26.956680700+07:00 INFO hospital_management_system - Connected to DB, Redis, and S3 successfully
+2025-06-22T21:48:26.957534500+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-22T21:48:36.284485100+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/login request_id=RequestId("f894fc53-5d67-4476-b80d-4c8d430f2633")
+2025-06-22T21:50:35.171139700+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/employee/register request_id=RequestId("6a003d0f-8dd7-472f-8cb6-5bf03d18713e")
+2025-06-22T21:50:35.171299700+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-22T21:51:12.790467100+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("88a83bdb-0c6e-4b77-8633-34c3debb46c9")
+2025-06-22T21:51:46.620914800+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("c5da797a-daeb-4986-bf7f-8a6049b50ec1")
+2025-06-22T21:52:44.858039600+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-22T21:54:31.927136700+07:00 INFO hospital_management_system - Connected to DB, Redis, and S3 successfully
+2025-06-22T21:54:31.927910600+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-22T21:54:42.576817200+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("8db44f72-d149-4a7c-b1da-6d2000f8950c")
+2025-06-22T21:54:42.576989800+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-22T21:54:43.210028200+07:00 INFO hospital_management_system::utils::helpers - OTP successfully send to...
+2025-06-22T21:55:37.232979100+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("95564b93-9b1e-4af5-b526-c6a5f87a5da6")
+2025-06-22T21:55:37.233159700+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-22T21:55:37.237561900+07:00 ERROR hospital_management_system::error_handling::app_error - DB error: Query(SqlxError(ColumnNotFound("employee_id")))
+2025-06-22T21:55:37.237780+07:00 ERROR tower_http::trace::on_failure - response failed classification=Status code: 500 Internal Server Error latency=4 ms
+2025-06-22T21:55:47.870627200+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("46fcafd5-6e9c-430b-8de6-53c71b112df0")
+2025-06-22T21:55:47.870803800+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-22T21:55:47.875350200+07:00 ERROR hospital_management_system::error_handling::app_error - DB error: Query(SqlxError(ColumnNotFound("employee_id")))
+2025-06-22T21:55:47.875584400+07:00 ERROR tower_http::trace::on_failure - response failed classification=Status code: 500 Internal Server Error latency=5 ms
+2025-06-22T21:55:49.134802900+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("c8769985-03b4-4d73-b63f-03fd85bf504b")
+2025-06-22T21:55:49.134931200+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-22T21:55:49.140008+07:00 ERROR hospital_management_system::error_handling::app_error - DB error: Query(SqlxError(ColumnNotFound("employee_id")))
+2025-06-22T21:55:49.140127800+07:00 ERROR tower_http::trace::on_failure - response failed classification=Status code: 500 Internal Server Error latency=5 ms
+2025-06-22T21:56:03.332218500+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-22T22:12:55.385586800+07:00 INFO hospital_management_system - Connected to DB, Redis, and S3 successfully
+2025-06-22T22:12:55.386328900+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-22T22:15:14.036529300+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/employee/register request_id=RequestId("3d7d887b-4a23-4890-8f55-d8a641d27650")
+2025-06-22T22:15:14.036679400+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-22T22:15:20.617376900+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("0c5ecdc6-c679-4c01-8ca2-34115801d77e")
+2025-06-22T22:15:20.617526900+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-22T22:15:21.262135500+07:00 INFO hospital_management_system::utils::helpers - OTP successfully send to...
+2025-06-22T22:16:05.748703700+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/verify-otp request_id=RequestId("488a18eb-2b7c-4082-b384-0d4bbfc5a0d1")
+2025-06-22T22:16:05.748889800+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/verify-otp
+2025-06-22T22:16:13.347109600+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/verify-otp request_id=RequestId("c6051ec6-4d39-4df7-ac31-fed9b5ef2de9")
+2025-06-22T22:16:13.347262400+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/verify-otp
+2025-06-22T22:16:30.073724200+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-22T22:20:33.784811500+07:00 INFO hospital_management_system - Connected to DB, Redis, and S3 successfully
+2025-06-22T22:20:33.785885400+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-22T22:20:38.011769500+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/employee/register request_id=RequestId("39c9702e-090e-4b81-b620-c13c8f94317c")
+2025-06-22T22:20:38.011899300+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-22T22:20:44.462314400+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("29a53ccc-8e71-47ff-b1ba-318c524f6088")
+2025-06-22T22:20:44.462442+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-22T22:20:45.137120+07:00 INFO hospital_management_system::utils::helpers - OTP successfully send to...
+2025-06-22T22:21:04.177148200+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/verify-otp request_id=RequestId("496002fa-7803-47a1-b4e3-ad69a5bfdeb8")
+2025-06-22T22:21:04.177305900+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/verify-otp
+2025-06-22T22:21:04.375524500+07:00 ERROR hospital_management_system::error_handling::app_error - DB error: Query(SqlxError(Database(PgDatabaseError { severity: Error, code: "42883", message: "operator does not exist: integer = text", detail: None, hint: Some("No operator matches the given name and argument types. You might need to add explicit type casts."), position: Some(Original(275)), where: None, schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("parse_oper.c"), line: Some(635), routine: Some("op_error") })))
+2025-06-22T22:21:04.375909700+07:00 ERROR tower_http::trace::on_failure - response failed classification=Status code: 500 Internal Server Error latency=198 ms
+2025-06-22T22:21:25.231695500+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-22T22:22:36.761601600+07:00 INFO hospital_management_system - Connected to DB, Redis, and S3 successfully
+2025-06-22T22:22:36.762600900+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-22T22:22:49.019839300+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/employee/register request_id=RequestId("f78b1de3-1444-4622-b3b0-8298c9b35308")
+2025-06-22T22:22:49.020045800+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-22T22:22:54.207552300+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("1d12cd4e-f7de-45f3-b4e2-cf342b031e67")
+2025-06-22T22:22:54.207715700+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-22T22:22:54.882560800+07:00 INFO hospital_management_system::utils::helpers - OTP successfully send to...
+2025-06-22T22:23:07.866719800+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/verify-otp request_id=RequestId("5196293c-ba4b-4c02-904d-fb57bcce8df7")
+2025-06-22T22:23:07.866873200+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/verify-otp
+2025-06-22T22:25:12.370394700+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-23T08:11:08.549464900+07:00 INFO hospital_management_system - Connected to DB, Redis, and S3 successfully
+2025-06-23T08:11:08.550872600+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-23T08:11:22.805988300+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/login request_id=RequestId("f179e6ff-3f87-4bc4-b786-cbe898a6c922")
+2025-06-23T08:12:45.455803300+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/employee/register request_id=RequestId("86de30be-0a4f-40fb-8314-2e07207ef589")
+2025-06-23T08:12:45.456003900+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-23T08:13:04.849142200+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("7cdbf65a-d1b3-49a0-8978-17978edb17b8")
+2025-06-23T08:13:04.849635+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-23T08:13:04.849963500+07:00 WARN hospital_management_system::utils::jwt - JWT decode error: Error(ExpiredSignature)
+2025-06-23T08:13:14.310576100+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("a3d6eb35-8940-411d-87fe-e59326838c89")
+2025-06-23T08:13:14.310789500+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-23T08:13:14.962190700+07:00 INFO hospital_management_system::utils::helpers - OTP successfully send to...
+2025-06-23T08:13:42.957304300+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/verify-otp request_id=RequestId("08099e9f-cad5-43be-9d2a-6ab92980c9fa")
+2025-06-23T08:13:42.957608+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/verify-otp
+2025-06-23T08:13:42.957936+07:00 WARN hospital_management_system::utils::jwt - JWT decode error: Error(ExpiredSignature)
+2025-06-23T08:14:22.902262900+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/verify-otp request_id=RequestId("f32715db-65cd-41dc-8bca-d77df211c5b7")
+2025-06-23T08:14:22.902540500+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/verify-otp
+2025-06-23T08:15:09.678887300+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("697628c9-1b36-40fe-8136-5ba6e1830118")
+2025-06-23T08:15:09.679107100+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-23T08:15:09.690233200+07:00 ERROR hospital_management_system::error_handling::app_error - DB error: Query(SqlxError(ColumnNotFound("employee_id")))
+2025-06-23T08:15:09.690630200+07:00 ERROR tower_http::trace::on_failure - response failed classification=Status code: 500 Internal Server Error latency=11 ms
+2025-06-23T08:16:13.465536300+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("097cf78a-2451-4cb3-8947-c670b66403fe")
+2025-06-23T08:16:13.466258200+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-23T08:16:13.476675600+07:00 ERROR hospital_management_system::error_handling::app_error - DB error: Query(SqlxError(ColumnNotFound("employee_id")))
+2025-06-23T08:16:13.476992200+07:00 ERROR tower_http::trace::on_failure - response failed classification=Status code: 500 Internal Server Error latency=11 ms
+2025-06-23T08:16:15.101985400+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("eab39ddd-ee34-4d27-b086-eb87903ed3d5")
+2025-06-23T08:16:15.102203200+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-23T08:16:15.109408300+07:00 ERROR hospital_management_system::error_handling::app_error - DB error: Query(SqlxError(ColumnNotFound("employee_id")))
+2025-06-23T08:16:15.109626900+07:00 ERROR tower_http::trace::on_failure - response failed classification=Status code: 500 Internal Server Error latency=7 ms
+2025-06-23T08:16:16.438623900+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("d4ce25a0-a91e-4bc7-98bb-2142616888b6")
+2025-06-23T08:16:16.438913400+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-23T08:16:16.445992700+07:00 ERROR hospital_management_system::error_handling::app_error - DB error: Query(SqlxError(ColumnNotFound("employee_id")))
+2025-06-23T08:16:16.446271500+07:00 ERROR tower_http::trace::on_failure - response failed classification=Status code: 500 Internal Server Error latency=7 ms
+2025-06-23T08:18:45.386092100+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-23T08:19:39.282591800+07:00 INFO hospital_management_system - Connected to DB, Redis, and S3 successfully
+2025-06-23T08:19:39.283726300+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-23T08:19:44.450521+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("db74afda-3e30-421d-8f87-cc16021721f2")
+2025-06-23T08:19:44.450857300+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-23T08:19:44.457659500+07:00 INFO hospital_management_system::use_cases::administrative::auth::service::auth_service - employee: Model { id: 112, full_name: "faputa", nip: Some("200310072021102006"), email: "faputa@gmail.com", phone: "+6285881342399", birth_date: 2003-10-07, hire_date: 2021-08-09, address: "123 Ave California", employment_status: "Contract", department_code: "DPT04", created_at: 2025-06-23T01:12:45.913806, created_by: Some(1), gender: 2 }
+2025-06-23T08:19:44.462109300+07:00 ERROR hospital_management_system::error_handling::app_error - DB error: Query(SqlxError(ColumnNotFound("employee_id")))
+2025-06-23T08:19:44.462452500+07:00 ERROR tower_http::trace::on_failure - response failed classification=Status code: 500 Internal Server Error latency=12 ms
+2025-06-23T08:21:03.878337700+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-23T08:21:54.155942800+07:00 INFO hospital_management_system - Connected to DB, Redis, and S3 successfully
+2025-06-23T08:21:54.157377100+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-23T08:21:57.578729200+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("4d70694f-21b3-4d61-944d-413c0fa59dc4")
+2025-06-23T08:21:57.578994700+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-23T08:21:57.585271900+07:00 INFO hospital_management_system::use_cases::administrative::auth::service::auth_service - employee: Model { id: 112, full_name: "faputa", nip: Some("200310072021102006"), email: "faputa@gmail.com", phone: "+6285881342399", birth_date: 2003-10-07, hire_date: 2021-08-09, address: "123 Ave California", employment_status: "Contract", department_code: "DPT04", created_at: 2025-06-23T01:12:45.913806, created_by: Some(1), gender: 2 }
+2025-06-23T08:21:57.590163700+07:00 INFO hospital_management_system::use_cases::administrative::auth::service::auth_service - user: true
+2025-06-23T08:22:32.434579800+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-23T08:24:00.832852400+07:00 INFO hospital_management_system - Connected to DB, Redis, and S3 successfully
+2025-06-23T08:24:00.833862700+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-23T08:24:03.554389400+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("a3086249-c04f-4745-911e-9d8dfd629dfc")
+2025-06-23T08:24:03.554678300+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-23T08:24:03.561383200+07:00 INFO hospital_management_system::use_cases::administrative::auth::service::auth_service - employee: Model { id: 112, full_name: "faputa", nip: Some("200310072021102006"), email: "faputa@gmail.com", phone: "+6285881342399", birth_date: 2003-10-07, hire_date: 2021-08-09, address: "123 Ave California", employment_status: "Contract", department_code: "DPT04", created_at: 2025-06-23T01:12:45.913806, created_by: Some(1), gender: 2 }
+2025-06-23T08:24:03.566313500+07:00 INFO hospital_management_system::use_cases::administrative::auth::service::auth_service - user: true
+2025-06-23T08:24:05.288954600+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/register request_id=RequestId("ca6e8209-c82a-4472-a7d5-3d42a28d24fb")
+2025-06-23T08:24:05.289203600+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-23T08:24:05.293334800+07:00 INFO hospital_management_system::use_cases::administrative::auth::service::auth_service - employee: Model { id: 112, full_name: "faputa", nip: Some("200310072021102006"), email: "faputa@gmail.com", phone: "+6285881342399", birth_date: 2003-10-07, hire_date: 2021-08-09, address: "123 Ave California", employment_status: "Contract", department_code: "DPT04", created_at: 2025-06-23T01:12:45.913806, created_by: Some(1), gender: 2 }
+2025-06-23T08:24:05.297408700+07:00 INFO hospital_management_system::use_cases::administrative::auth::service::auth_service - user: true
+2025-06-23T08:24:18.106100700+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-23T16:51:46.601380500+07:00 INFO hospital_management_system - Connected to DB, Redis, and S3 successfully
+2025-06-23T16:51:46.602007800+07:00 INFO tokio_cron_scheduler::job_scheduler - Uninited
+2025-06-23T16:51:46.602192600+07:00 INFO tokio_cron_scheduler::job_scheduler - Job creator created
+2025-06-23T16:51:46.602280500+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-23T16:52:43.264113300+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/login request_id=RequestId("741ca34a-5a02-4c58-ab50-d195a34119da")
+2025-06-23T16:53:14.038904100+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/public/login request_id=RequestId("d0aeb774-8ac5-4b2a-921d-e4aa36bdb0f5")
+2025-06-23T16:53:17.395861+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/public/login request_id=RequestId("50936eb3-28d8-4867-93fd-0295b511e6e7")
+2025-06-23T16:54:35.977406700+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/employee/register request_id=RequestId("9283ecb6-1fd7-41f3-af79-1ebcebfd3326")
+2025-06-23T16:54:35.977548100+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-23T16:54:46.866873500+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/employee/register request_id=RequestId("72cd0932-e54d-49ac-abbc-618dd85db95f")
+2025-06-23T16:54:46.867020700+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-23T16:55:00.255126300+07:00 INFO hospital_management_system::utils::worker::cron_register_setup_cleanup - [Worker] Running cleanup at: 2025-06-23 09:55:00.254803300 UTC
+2025-06-23T16:55:00.303632100+07:00 INFO hospital_management_system::utils::worker::cron_register_setup_cleanup - [Worker] No expired users found. Job finished.
+2025-06-23T16:55:15.735776700+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/employee/register request_id=RequestId("a32f983f-5f33-4702-b8d1-eb9b5b1515ff")
+2025-06-23T16:55:15.735930800+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-23T16:55:47.263047200+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/employee/register request_id=RequestId("d33000db-2696-4566-96b6-3c1cd7b64543")
+2025-06-23T16:55:47.263220700+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-23T16:55:47.299283400+07:00 ERROR hospital_management_system::error_handling::app_error - DB error: Query(SqlxError(Database(PgDatabaseError { severity: Error, code: "23503", message: "insert or update on table \"employees\" violates foreign key constraint \"employees_created_by_fkey\"", detail: Some("Key (created_by)=(1) is not present in table \"employees\"."), hint: None, position: None, where: None, schema: Some("public"), table: Some("employees"), column: None, data_type: None, constraint: Some("employees_created_by_fkey"), file: Some("ri_triggers.c"), line: Some(2599), routine: Some("ri_ReportViolation") })))
+2025-06-23T16:55:47.299537100+07:00 ERROR tower_http::trace::on_failure - response failed classification=Status code: 500 Internal Server Error latency=36 ms
+2025-06-23T16:56:16.383812600+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/employee/register request_id=RequestId("eebe18cc-6c48-4d52-b418-ecd524b6dde0")
+2025-06-23T16:56:16.384038100+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-23T16:56:16.392381900+07:00 ERROR hospital_management_system::error_handling::app_error - DB error: Query(SqlxError(Database(PgDatabaseError { severity: Error, code: "23503", message: "insert or update on table \"employees\" violates foreign key constraint \"employees_created_by_fkey\"", detail: Some("Key (created_by)=(1) is not present in table \"employees\"."), hint: None, position: None, where: None, schema: Some("public"), table: Some("employees"), column: None, data_type: None, constraint: Some("employees_created_by_fkey"), file: Some("ri_triggers.c"), line: Some(2599), routine: Some("ri_ReportViolation") })))
+2025-06-23T16:56:16.392559300+07:00 ERROR tower_http::trace::on_failure - response failed classification=Status code: 500 Internal Server Error latency=8 ms
+2025-06-23T16:56:47.824175700+07:00 INFO hospital_management_system - Shutdown signal received, exiting...
+2025-06-23T17:00:58.735719300+07:00 INFO hospital_management_system - Connected to DB, Redis, and S3 successfully
+2025-06-23T17:00:58.739036700+07:00 INFO tokio_cron_scheduler::job_scheduler - Uninited
+2025-06-23T17:00:58.739127100+07:00 INFO hospital_management_system - Listening on 127.0.0.1:8080
+2025-06-23T17:00:58.739420300+07:00 INFO tokio_cron_scheduler::job_scheduler - Job creator created
+2025-06-23T17:01:01.952695500+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/employee/register request_id=RequestId("f7daa339-f1a5-4fc7-ae22-34a32fb806f5")
+2025-06-23T17:01:01.952851300+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-23T17:02:29.068160900+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/protected/register request_id=RequestId("b7eef19c-0148-40d6-926d-9b9f9b4b705d")
+2025-06-23T17:02:29.068342200+07:00 INFO hospital_management_system::middleware::layer_middleware::authenticate_layer - auth_middleware; uri=/register
+2025-06-23T17:02:29.745353500+07:00 INFO hospital_management_system::utils::helpers - OTP successfully send to...
+2025-06-23T17:03:20.722886800+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/public/verify-otp request_id=RequestId("0b0c4d08-a52f-4009-b013-56cf5fc29473")
+2025-06-23T17:03:20.839485100+07:00 WARN hospital_management_system::use_cases::administrative::auth::service::auth_service - OTP mismatch for employee_id 102
+2025-06-23T17:03:26.728728900+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/public/verify-otp request_id=RequestId("f2eda9c4-5593-4910-9bf8-fd637ea1d46f")
+2025-06-23T17:03:26.965884+07:00 WARN hospital_management_system::use_cases::administrative::auth::service::auth_service - OTP mismatch for employee_id 102
+2025-06-23T17:04:04.507431600+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/public/verify-otp request_id=RequestId("8c23875c-4bff-4a54-ade6-640469e4b321")
+2025-06-23T17:05:00.421910700+07:00 INFO hospital_management_system::utils::worker::cron_register_setup_cleanup - [Worker] Running cleanup at: 2025-06-23 10:05:00.421370900 UTC
+2025-06-23T17:05:00.454681+07:00 INFO hospital_management_system::utils::worker::cron_register_setup_cleanup - [Worker] No expired users found. Job finished.
+2025-06-23T17:06:20.198983600+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=POST uri=/api/v1/auth/public/register/setup?setup_token=846146c2-4656-4f18-835d-d7fdc5b05033&employee_id=102 request_id=RequestId("7599aeff-e572-417b-9817-b51d36ac515d")
+2025-06-23T17:06:44.540643500+07:00 INFO hospital_management_system::middleware::layer_middleware::error_handler_layer - request; method=PATCH uri=/api/v1/auth/public/register/setup?setup_token=846146c2-4656-4f18-835d-d7fdc5b05033&employee_id=102 request_id=RequestId("acc0b1c9-ccc7-4b06-b468-35ea6f14cfc5")
+2025-06-23T17:10:00.476899900+07:00 INFO hospital_management_system::utils::worker::cron_register_setup_cleanup - [Worker] Running cleanup at: 2025-06-23 10:10:00.476644200 UTC
+2025-06-23T17:10:00.538431700+07:00 INFO hospital_management_system::utils::worker::cron_register_setup_cleanup - [Worker] No expired users found. Job finished.
+2025-06-23T17:12:55.855724+07:00 INFO hospital_management_system - Shutdown signal received, exiting...

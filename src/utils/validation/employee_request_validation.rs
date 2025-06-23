@@ -106,17 +106,42 @@ pub fn validate_employee_id(employee_id: &str) -> Result<(), ValidationError> {
     }
 }
 
-pub fn validate_password(password: &str) -> Result<(), ValidationError> {
-    let re = Regex::new(r"^(?=.*[A-Z])(?=.*\d)(?=.*[@!/_\-&])[A-Za-z\d@!-/&]{8,}$")
-        .expect("Failed to define regex");
-
-    if re.is_match(password) {
-        Ok(())
-    } else {
-        Err(ValidationError::new("password_invalid").with_message(std::borrow::Cow::Borrowed(
-            "Password must include Uppercase, number, special character, and at least 8 characters long.",
-        )))
+pub fn validate_username(username: &str) -> Result<(), ValidationError> {
+    let allowed = Regex::new(r"^[A-Za-z\d@!/_\-&]{4,}$").unwrap();
+    if !allowed.is_match(username) {
+        return Err(ValidationError::new("username_invalid").with_message(
+            "Username must be at least 8 characters and only contain allowed characters.".into(),
+        ));
     }
+    Ok(())
+}
+
+pub fn validate_password(password: &str) -> Result<(), ValidationError> {
+    let uppercase = Regex::new(r"[A-Z]").unwrap();
+    let digit = Regex::new(r"\d").unwrap();
+    let special = Regex::new(r"[@!/_\-&]").unwrap();
+    let allowed = Regex::new(r"^[A-Za-z\d@!/_\-&]{8,}$").unwrap();
+
+    if !allowed.is_match(password) {
+        return Err(ValidationError::new("password_invalid").with_message(
+            "Password must be at least 8 characters and only contain allowed characters.".into(),
+        ));
+    }
+    if !uppercase.is_match(password) {
+        return Err(ValidationError::new("password_invalid")
+            .with_message("Password must contain at least one uppercase letter.".into()));
+    }
+    if !digit.is_match(password) {
+        return Err(ValidationError::new("password_invalid")
+            .with_message("Password must contain at least one number.".into()));
+    }
+    if !special.is_match(password) {
+        return Err(ValidationError::new("password_invalid").with_message(
+            "Password must contain at least one special character (@!/_-&).".into(),
+        ));
+    }
+
+    Ok(())
 }
 
 pub fn validate_nip(nip: &str, birth_date: &str, gender: &str) -> Result<(), ValidationError> {

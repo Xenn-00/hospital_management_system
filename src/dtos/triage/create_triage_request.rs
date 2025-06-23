@@ -79,6 +79,12 @@ impl<'de> Deserialize<'de> for BloodType {
     }
 }
 
+#[derive(Debug, Deserialize)]
+pub struct PaginationQuery {
+    pub page: Option<i32>,
+    pub per_page: Option<i32>,
+}
+
 #[derive(Debug, Clone, Display)]
 pub enum VisitType {
     COMMON,

@@ -1,13 +1,13 @@
 use axum::{
     Extension, Json,
-    extract::{Multipart, Path, State},
+    extract::{Multipart, Path, Query, State},
 };
 
 use validator::Validate;
 
 use crate::{
     dtos::triage::{
-        create_triage_request::CreateTriageRequest,
+        create_triage_request::{CreateTriageRequest, PaginationQuery},
         referral_upload_metadata::ReferralUploadMetadata,
         response::{
             CreateTriageResponse, ReferralUploadResponse, TriagePatientCalled, TriagePatientCancel,
@@ -46,12 +46,15 @@ pub async fn triage_queue(
     State(state): State<AppState>,
     Extension(request_id): Extension<RequestId>,
     Path(visit_type): Path<String>,
+    Query(pagination): Query<PaginationQuery>,
 ) -> Result<Json<ApiResponse<TriageQueueResponse>>, AppError> {
     let db = &state.db;
     let redis = &state.redis;
 
-    let result =
-        <TriageService as TriageServiceContracts>::get_triage_queue(db, redis, visit_type).await?;
+    let result = <TriageService as TriageServiceContracts>::get_triage_queue(
+        db, redis, visit_type, pagination,
+    )
+    .await?;
 
     let response = ApiResponse {
         message: "Get triage queue successful".to_string(),

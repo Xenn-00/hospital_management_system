@@ -33,7 +33,9 @@ pub trait TriageTraitRepo {
     async fn get_queue(
         db: &DatabaseConnection,
         visit_type: &VisitType,
-    ) -> Result<Vec<TriageQueueItem>, AppError>;
+        offset: i32,
+        limit: i32,
+    ) -> Result<(i32, Vec<TriageQueueItem>), AppError>;
     async fn get_status_by_queue_number(
         db: &DatabaseConnection,
         queue_number: i32,
@@ -42,7 +44,7 @@ pub trait TriageTraitRepo {
     async fn update_visit_intent_status(
         txn: &DatabaseTransaction,
         visit_intent_id: i32,
-        status: &str,
+        status: String,
     ) -> Result<(), AppError>;
     async fn call_patient(
         txn: &DatabaseTransaction,

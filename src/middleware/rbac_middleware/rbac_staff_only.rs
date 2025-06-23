@@ -23,7 +23,7 @@ pub async fn rbac_staff_only(
     if claims.role != "staff"
         && claims.role != "triage_staff"
         && claims.role != "nurse"
-        && claims.role != "Superadmin"
+        && claims.role != "SUPERADMIN"
     {
         return Err(AppError::Forbidden("Insufficient permissions".into()));
     }

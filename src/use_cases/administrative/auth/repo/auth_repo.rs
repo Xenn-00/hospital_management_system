@@ -1,7 +1,10 @@
 use async_trait::async_trait;
 use chrono::Utc;
 use entity::users;
-use sea_orm::{ActiveValue::Set, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
+use sea_orm::{
+    ActiveValue::Set, ColumnTrait, DatabaseConnection, DatabaseTransaction, EntityTrait,
+    QueryFilter,
+};
 
 use crate::{
     error_handling::app_error::AppError,
@@ -36,5 +39,14 @@ impl AuthRepoContract for AuthRepo {
         users::Entity::update(model).exec(db).await?;
 
         Ok(())
+    }
+
+    async fn register_new_user(
+        txn: &DatabaseTransaction,
+        payload: users::ActiveModel,
+    ) -> Result<users::Model, AppError> {
+        Ok(users::Entity::insert(payload)
+            .exec_with_returning(txn)
+            .await?)
     }
 }

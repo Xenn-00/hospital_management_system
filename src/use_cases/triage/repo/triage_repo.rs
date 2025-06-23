@@ -7,7 +7,7 @@ use entity::{
 
 use sea_orm::{
     ActiveModelTrait, ActiveValue::Set, ColumnTrait, DatabaseConnection, DatabaseTransaction,
-    EntityTrait, QueryFilter, QueryOrder, QuerySelect, sea_query::OnConflict,
+    EntityTrait, PaginatorTrait, QueryFilter, QueryOrder, QuerySelect,
 };
 
 use crate::{
@@ -21,6 +21,38 @@ use crate::{
 };
 
 pub struct TriageRepo;
+
+enum QueueStatus {
+    WAITING,
+    CALLED,
+    DONE,
+    CANCELLED,
+}
+
+enum ReferralStatus {
+    WAITING,
+}
+
+impl ToString for ReferralStatus {
+    fn to_string(&self) -> String {
+        match self {
+            ReferralStatus::WAITING => "WAITING",
+        }
+        .to_string()
+    }
+}
+
+impl ToString for QueueStatus {
+    fn to_string(&self) -> String {
+        match self {
+            QueueStatus::WAITING => "WAITING",
+            QueueStatus::CALLED => "CALLED",
+            QueueStatus::DONE => "DONE",
+            QueueStatus::CANCELLED => "CANCELED",
+        }
+        .to_string()
+    }
+}
 
 #[async_trait]
 impl TriageTraitRepo for TriageRepo {
@@ -37,7 +69,6 @@ impl TriageTraitRepo for TriageRepo {
         }
 
         let now = Utc::now().naive_utc();
-
         let model = ActiveModel {
             name: Set(payload.name.to_owned()),
             date_of_birth: Set(payload.date_of_birth),
@@ -66,7 +97,7 @@ impl TriageTraitRepo for TriageRepo {
         let model = patients_visit_intent::ActiveModel {
             patient_id: Set(patient_id),
             visit_type: Set(payload.visit_type.to_string()),
-            status: Set("WAITING".into()),
+            status: Set(QueueStatus::WAITING.to_string()),
             created_at: Set(now),
             updated_at: Set(now),
             ..Default::default()
@@ -78,32 +109,31 @@ impl TriageTraitRepo for TriageRepo {
         txn: &DatabaseTransaction,
         visit_type: &VisitType,
     ) -> Result<i32, AppError> {
-        let insert_model = queue_sequence::ActiveModel {
-            visit_type: Set(visit_type.to_string()),
-            last_number: Set(1),
-            ..Default::default()
-        };
+        let visit = visit_type.to_string();
 
-        queue_sequence::Entity::insert(insert_model)
-            .on_conflict(
-                OnConflict::column(queue_sequence::Column::VisitType)
-                    .update_column(queue_sequence::Column::LastNumber)
-                    .value(
-                        queue_sequence::Column::LastNumber,
-                        sea_orm::sea_query::Expr::col(queue_sequence::Column::LastNumber).add(1),
-                    )
-                    .to_owned(),
-            )
-            .exec(txn)
-            .await?;
-
-        let tracker = queue_sequence::Entity::find()
-            .filter(queue_sequence::Column::VisitType.eq(visit_type.to_string()))
+        if let Some(mut model) = queue_sequence::Entity::find()
+            .filter(queue_sequence::Column::VisitType.eq(&visit))
+            .lock_exclusive()
             .one(txn)
             .await?
-            .ok_or_else(|| AppError::Internal("Failed to fetch updated tracker".into()))?;
+        {
+            model.last_number += 1;
 
-        Ok(tracker.last_number)
+            let active: queue_sequence::ActiveModel = model.into();
+            let updated = active.update(txn).await?;
+
+            Ok(updated.last_number)
+        } else {
+            let new_model = queue_sequence::ActiveModel {
+                visit_type: Set(visit),
+                last_number: Set(1),
+                ..Default::default()
+            }
+            .insert(txn)
+            .await?;
+
+            Ok(new_model.last_number)
+        }
     }
 
     async fn create_queue_ticket(
@@ -117,7 +147,7 @@ impl TriageTraitRepo for TriageRepo {
             visit_intent_id: Set(intent_id),
             queue_number: Set(tracking_number),
             queue_type: Set(visit_type.to_string()),
-            status: Set("WAITING".into()),
+            status: Set(QueueStatus::WAITING.to_string()),
             created_at: Set(Utc::now().naive_utc()),
             ..Default::default()
         };
@@ -127,40 +157,41 @@ impl TriageTraitRepo for TriageRepo {
     async fn get_queue(
         db: &DatabaseConnection,
         visit_type: &VisitType,
-    ) -> Result<Vec<TriageQueueItem>, AppError> {
-        let existing = queue_ticket::Entity::find()
-            .filter(queue_ticket::Column::QueueType.eq(visit_type.to_string()))
-            .filter(queue_ticket::Column::Status.eq("WAITING".to_string()))
+        offset: i32,
+        limit: i32,
+    ) -> Result<(i32, Vec<TriageQueueItem>), AppError> {
+        let visit_string = visit_type.to_string();
+
+        let total = queue_ticket::Entity::find()
+            .filter(queue_ticket::Column::QueueType.eq(&visit_string))
+            .filter(queue_ticket::Column::Status.eq(QueueStatus::WAITING.to_string()))
+            .count(db)
+            .await? as i32;
+
+        let entries = queue_ticket::Entity::find()
+            .filter(queue_ticket::Column::QueueType.eq(&visit_string))
+            .filter(queue_ticket::Column::Status.eq(QueueStatus::WAITING.to_string()))
             .order_by_asc(queue_ticket::Column::CreatedAt)
+            .offset(offset as u64)
+            .limit(limit as u64)
             .find_also_related(patients_visit_intent::Entity)
             .all(db)
             .await?;
 
-        let result = existing
+        let data = entries
             .into_iter()
-            .map(|(ticket, visit)| {
-                let formatted = format_created_at!(ticket.created_at);
-                match visit {
-                    Some(v) => Some(TriageQueueItem {
-                        queue_number: ticket.queue_number,
-                        patient_id: v.patient_id,
-                        visit_id: ticket.visit_intent_id,
-                        status: ticket.status,
-                        created_at: formatted,
-                    }),
-                    None => {
-                        tracing::error!(
-                            "Queue ticket ID {} has no related patients_visit_intent (visit_id: {})",
-                            ticket.id,
-                            ticket.visit_intent_id
-                        );
-                        None
-                    }
-                }
+            .filter_map(|(ticket, visit)| {
+                visit.map(|v| TriageQueueItem {
+                    queue_number: ticket.queue_number,
+                    patient_id: v.patient_id,
+                    visit_id: ticket.visit_intent_id,
+                    status: ticket.status,
+                    created_at: format_created_at!(ticket.created_at),
+                })
             })
-            .filter_map(|x| x)
-            .collect::<Vec<_>>();
-        Ok(result)
+            .collect();
+
+        Ok((total, data))
     }
 
     async fn get_status_by_queue_number(
@@ -186,7 +217,7 @@ impl TriageTraitRepo for TriageRepo {
     async fn update_visit_intent_status(
         txn: &DatabaseTransaction,
         visit_intent_id: i32,
-        status: &str,
+        status: String,
     ) -> Result<(), AppError> {
         let intent = patients_visit_intent::Entity::find_by_id(visit_intent_id)
             .one(txn)
@@ -221,10 +252,15 @@ impl TriageTraitRepo for TriageRepo {
         match ticket.status.to_uppercase().as_str() {
             "WAITING" => {
                 let mut active: queue_ticket::ActiveModel = ticket.into();
-                active.status = Set("CALLED".into());
+                active.status = Set(QueueStatus::CALLED.to_string());
                 active.called_at = Set(Some(Utc::now().naive_utc()));
                 let updated = active.update(txn).await?;
-                Self::update_visit_intent_status(txn, updated.visit_intent_id, "CALLED").await?;
+                Self::update_visit_intent_status(
+                    txn,
+                    updated.visit_intent_id,
+                    QueueStatus::CALLED.to_string(),
+                )
+                .await?;
                 Ok(updated)
             }
             "CALLED" => Err(AppError::BadRequest(format!(
@@ -257,10 +293,15 @@ impl TriageTraitRepo for TriageRepo {
                 )));
             }
             let mut active: queue_ticket::ActiveModel = ticket.into();
-            active.status = Set("DONE".into());
+            active.status = Set(QueueStatus::DONE.to_string());
             active.done_at = Set(Some(Utc::now().naive_utc()));
             let updated = active.update(txn).await?;
-            Self::update_visit_intent_status(txn, updated.visit_intent_id, "DONE").await?;
+            Self::update_visit_intent_status(
+                txn,
+                updated.visit_intent_id,
+                QueueStatus::DONE.to_string(),
+            )
+            .await?;
             return Ok(updated);
         }
 
@@ -281,14 +322,16 @@ impl TriageTraitRepo for TriageRepo {
             .one(txn)
             .await?
         {
-            if ticket.status == "CALLED" || ticket.status == "DONE" {
+            if ticket.status == QueueStatus::CALLED.to_string()
+                || ticket.status == QueueStatus::DONE.to_string()
+            {
                 return Err(AppError::BadRequest(format!(
                     "Queue {} with number {} is currently being called",
                     visit_type, queue_number
                 )));
             }
             let mut active: queue_ticket::ActiveModel = ticket.into();
-            active.status = Set("CANCELED".into());
+            active.status = Set(QueueStatus::CANCELLED.to_string());
             let updated = active.update(txn).await?;
             return Ok(updated);
         }
@@ -312,7 +355,7 @@ impl TriageTraitRepo for TriageRepo {
             visit_intent_id: Set(visit_id),
             patients_id: Set(patient_id),
             file_size: Set((file_bytes.len()) as i64),
-            status: Set("WAITING".to_string()),
+            status: Set(ReferralStatus::WAITING.to_string()),
             referral_document_url: Set(url),
             ..Default::default()
         }

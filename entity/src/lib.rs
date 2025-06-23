@@ -2,6 +2,7 @@
 
 pub mod prelude;
 
+pub mod department_roles;
 pub mod departments;
 pub mod doctor_schedules;
 pub mod doctors;
@@ -16,5 +17,6 @@ pub mod position_titles;
 pub mod queue_sequence;
 pub mod queue_ticket;
 pub mod referral_documents;
+pub mod role;
 pub mod rooms;
 pub mod users;

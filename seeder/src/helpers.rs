@@ -5,12 +5,12 @@ use argon2::{
 use chrono::{Duration, NaiveDate, NaiveTime, Utc};
 use log::warn;
 use rand::prelude::*;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use entity::{
-    departments, doctor_schedules, doctors, employee_position, employees, nurses,
-    nurses_polyclinic_assignments, polyclinic, position_titles, rooms,
-    users::{self, Role},
+    department_roles, departments, doctor_schedules, doctors, employee_position, employees, nurses,
+    nurses_polyclinic_assignments, polyclinic, position_titles, role, rooms,
+    users::{self, AccountStatus},
 };
 use sea_orm::ActiveValue::Set;
 
@@ -339,79 +339,154 @@ pub fn generate_nurses_polyclinic_assignments(
     assignments
 }
 
-pub fn generate_users(employees: Vec<employees::Model>) -> Vec<users::ActiveModel> {
+pub fn generate_roles() -> Vec<role::ActiveModel> {
+    let initial_roles: HashMap<&str, &str> = vec![
+        ("SUPRADM", "SUPERADMIN"),
+        ("ADMGENR", "ADMIN_GENERAL"),
+        ("ADMHR", "ADMIN_HR"),
+        ("ADMFIN", "ADMIN_FINANCE"),
+        ("ADMTECH", "ADMIN_TECH"),
+        ("ADMSUPP", "ADMIN_SUPPORT"),
+        ("FRNSTFF", "FRONT_STAFF"),
+        ("DOCRGNL", "GENERAL_DOCTOR"),
+        ("DOCSPCL", "SPECIALIST_DOCTOR"),
+        ("NURSE", "NURSE"),
+        ("EMRGNCY", "EMERGENCY_STAFF"),
+        ("CASHIER", "CASHIER"),
+        ("LABSTFF", "LAB_STAFF"),
+        ("PHARMA", "PHARMACIST"),
+        ("PROCSTF", "PROCUREMENT_STAFF"),
+        ("SUPSTFF", "SUPPORT_STAFF"),
+        ("HEADDEP", "DEPARTMENT_HEAD"),
+    ]
+    .into_iter()
+    .collect();
+
+    initial_roles
+        .into_iter()
+        .map(|(code, name)| role::ActiveModel {
+            code: Set(code.to_string()),
+            name: Set(name.to_string()),
+            ..Default::default()
+        })
+        .collect()
+}
+
+pub fn generate_department_roles(
+    role_code_to_id: HashMap<String, i32>,
+) -> Vec<department_roles::ActiveModel> {
+    let dept_to_roles: HashMap<&str, Vec<&str>> = HashMap::from([
+        ("DPT01", vec!["ADMGENR", "FRNSTFF", "SUPRADM", "HEADDEP"]),
+        ("DPT02", vec!["ADMHR", "HEADDEP"]),
+        ("DPT03", vec!["ADMFIN", "CASHIER", "HEADDEP"]),
+        ("DPT04", vec!["ADMTECH", "SUPRADM", "HEADDEP"]),
+        ("DPT05", vec!["DOCRGNL", "DOCSPCL", "HEADDEP"]),
+        ("DPT06", vec!["EMRGNCY", "DOCRGNL", "HEADDEP"]),
+        ("DPT07", vec!["PROCSTF", "HEADDEP"]),
+        ("DPT08", vec!["NURSE", "HEADDEP"]),
+        ("DPT09", vec!["LABSTFF", "HEADDEP"]),
+        ("DPT10", vec!["ADMSUPP", "SUPSTFF", "HEADDEP"]),
+    ]);
+
+    dept_to_roles
+        .into_iter()
+        .flat_map(|(dept_code, role_codes)| {
+            role_codes.into_iter().map({
+                let value = role_code_to_id.clone();
+                move |role_code| department_roles::ActiveModel {
+                    department_code: Set(dept_code.to_string()),
+                    role_id: Set(*value.get(role_code).expect("Failed to get role code")),
+                    ..Default::default()
+                }
+            })
+        })
+        .collect()
+}
+
+pub fn generate_users(
+    employees: Vec<employees::Model>,
+    role_code_to_id: HashMap<String, i32>,
+) -> Vec<users::ActiveModel> {
     let mut rng = rand::rng();
     let now = Utc::now();
 
-    let dept_to_role = |dept: String| -> Role {
-        match dept.as_str() {
-            "DPT01" => Role::Admin,
-            "DPT02" => Role::Staff,
-            "DPT03" => Role::Cashier,
-            "DPT04" => Role::Staff,
-            "DPT05" => Role::Doctor,
-            "DPT06" => Role::Emergency,
-            "DPT07" => Role::Staff,
-            "DPT08" => Role::Nurse,
-            "DPT09" => Role::LabStaff,
-            "DPT10" => Role::Staff,
-            _ => Role::Staff,
+    let fallback_role = *role_code_to_id
+        .get("FRNSTFF")
+        .expect("Fallback role FRNSTFF not found");
+
+    let dept_to_roles = |dept_code: &str| -> Vec<&str> {
+        match dept_code {
+            "DPT01" => vec!["ADMGENR", "FRNSTFF", "SUPRADM", "HEADDEP"], // Administrative
+            "DPT02" => vec!["ADMHR", "HEADDEP"],                         // Human Resource
+            "DPT03" => vec!["ADMFIN", "CASHIER", "HEADDEP"],             // Finance
+            "DPT04" => vec!["ADMTECH", "SUPRADM", "HEADDEP"],            // IT
+            "DPT05" => vec!["DOCRGNL", "DOCSPCL", "HEADDEP"],            // Clinical
+            "DPT06" => vec!["EMRGNCY", "DOCRGNL", "HEADDEP"],            // Emergency
+            "DPT07" => vec!["PROCSTF", "HEADDEP"],                       // Procurement
+            "DPT08" => vec!["NURSE", "HEADDEP"],                         // Nursing
+            "DPT09" => vec!["LABSTFF", "HEADDEP"],                       // Laboratory
+            "DPT10" => vec!["ADMSUPP", "SUPSTFF", "HEADDEP"],            // Support
+            _ => vec!["FRNSTFF"],                                        // fallback
         }
     };
 
-    let mut users = Vec::new();
+    let mut headdep_given = HashSet::<String>::new();
+
     let argon2 = Argon2::new(
         argon2::Algorithm::Argon2id,
         argon2::Version::V0x13,
         Params::new(8, 1, 1, None).unwrap(),
     );
-    for e in employees {
-        if e.email == "superadmin@admin.com" {
-            let password_raw = format!("your_superadmin");
-            let salt = SaltString::generate(&mut OsRng);
 
+    employees
+        .into_iter()
+        .enumerate()
+        .map(|(i, e)| {
+            let username;
+            let password_raw;
+            let role_id;
+
+            if e.email == "superadmin@admin.com" {
+                username = "superadmin".to_string();
+                password_raw = "your_superadmin".to_string();
+                role_id = *role_code_to_id
+                    .get("SUPRADM")
+                    .expect("Role SUPRADM not found");
+            } else {
+                let mut role_codes = dept_to_roles(&e.department_code);
+                role_codes.shuffle(&mut rng);
+                if headdep_given.contains(&e.department_code) {
+                    role_codes.retain(|&code| code != "HEADDEP");
+                }
+                let selected_code = role_codes.get(i % role_codes.len()).unwrap_or(&"FRNSTFF");
+                if *selected_code == "HEADDEP" {
+                    headdep_given.insert(e.department_code.clone());
+                }
+
+                role_id = *role_code_to_id
+                    .get(*selected_code)
+                    .unwrap_or(&fallback_role);
+                username = format!("user_{}", e.id);
+                password_raw = format!("{}{}", username, selected_code.to_lowercase());
+            }
+
+            let salt = SaltString::generate(&mut OsRng);
             let password_hash = argon2
                 .hash_password(password_raw.as_bytes(), &salt)
                 .expect("Failed to hash password")
                 .to_string();
 
-            users.push(users::ActiveModel {
+            users::ActiveModel {
                 employee_id: Set(e.id),
-                password: Set(password_hash),
-                username: Set(format!("superadmin")),
-                role: Set(Role::Superadmin),
+                password: Set(Some(password_hash)),
+                username: Set(Some(username)),
+                role_id: Set(role_id),
                 last_login: Set(Some(
                     (now - Duration::days(rng.random_range(1..=30))).naive_utc(),
                 )),
-                is_active: Set(true),
+                account_status: Set(AccountStatus::Active),
                 ..Default::default()
-            });
-
-            continue;
-        }
-        let role = dept_to_role(e.department_code);
-        let username = format!("user_{}", e.id);
-        let password_raw = format!("{}{}", username, role.to_string().to_lowercase());
-
-        let salt = SaltString::generate(&mut OsRng);
-
-        let password_hash = argon2
-            .hash_password(password_raw.as_bytes(), &salt)
-            .expect("Failed to hash password")
-            .to_string();
-
-        users.push(users::ActiveModel {
-            employee_id: Set(e.id),
-            password: Set(password_hash),
-            username: Set(username),
-            role: Set(role),
-            last_login: Set(Some(
-                (now - Duration::days(rng.random_range(1..=30))).naive_utc(),
-            )),
-            is_active: Set(true),
-            ..Default::default()
-        });
-    }
-
-    users
+            }
+        })
+        .collect()
 }

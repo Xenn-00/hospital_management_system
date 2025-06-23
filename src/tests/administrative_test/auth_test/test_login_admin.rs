@@ -29,13 +29,15 @@ async fn test_login_admin() {
         TestContext::clean_records(&ctx.db).await;
 
         let test_state = AppState {
-            db: ctx.db.clone(),
-            redis: ctx.redis.clone(),
-            s3: ctx.s3.clone(),
-            jwt_keys: ctx.jwt_keys.clone(),
+            db: ctx.db.clone().into(),
+            redis: ctx.redis.clone().into(),
+            s3: ctx.s3.clone().into(),
+            jwt_keys: ctx.jwt_keys.clone().into(),
+            twilio: ctx.twilio.into(),
         };
 
         TestContext::seed_departments(&ctx.db).await;
+        TestContext::seed_role(&ctx.db).await;
         TestContext::seed_employee_and_user(&ctx.db).await;
 
         let app = Router::new()

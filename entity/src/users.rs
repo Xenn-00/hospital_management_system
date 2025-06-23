@@ -10,35 +10,28 @@ pub struct Model {
     #[sea_orm(unique)]
     pub employee_id: i32,
     #[sea_orm(unique)]
-    pub username: String,
-    pub password: String,
-    pub role: Role,
+    pub username: Option<String>,
+    pub password: Option<String>,
     pub last_login: Option<DateTime>,
-    pub is_active: bool,
     pub created_at: DateTime,
+    pub role_id: i32,
+    pub created_by: Option<i32>,
+    pub updated_by: Option<i32>,
+    pub deleted_by: Option<i32>,
+    pub account_status: AccountStatus,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, EnumIter, DeriveActiveEnum, DeriveDisplay)]
-#[sea_orm(rs_type = "String", db_type = "Text")]
-pub enum Role {
-    #[sea_orm(string_value = "admin")]
-    Admin,
-    #[sea_orm(string_value = "staff")]
-    Staff,
-    #[sea_orm(string_value = "doctor")]
-    Doctor,
-    #[sea_orm(string_value = "emergency")]
-    Emergency,
-    #[sea_orm(string_value = "nurse")]
-    Nurse,
-    #[sea_orm(string_value = "cashier")]
-    Cashier,
-    #[sea_orm(string_value = "lab_staff")]
-    LabStaff,
-    #[sea_orm(string_value = "pharmacist")]
-    Pharmacist,
-    #[sea_orm(string_value = "superadmin")]
-    Superadmin,
+#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum)]
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "account_status")]
+pub enum AccountStatus {
+    #[sea_orm(string_value = "PENDING_VERIFICATION")]
+    PendingVerification,
+    #[sea_orm(string_value = "AWAITING_SETUP")]
+    AwaitingSetup,
+    #[sea_orm(string_value = "ACTIVE")]
+    Active,
+    #[sea_orm(string_value = "SUSPENDED")]
+    Suspended,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -51,11 +44,49 @@ pub enum Relation {
         on_delete = "Cascade"
     )]
     Employees,
+    #[sea_orm(
+        belongs_to = "super::role::Entity",
+        from = "Column::RoleId",
+        to = "super::role::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    Role,
+    #[sea_orm(
+        belongs_to = "Entity",
+        from = "Column::CreatedBy",
+        to = "Column::Id",
+        on_update = "NoAction",
+        on_delete = "SetNull"
+    )]
+    SelfRef3,
+    #[sea_orm(
+        belongs_to = "Entity",
+        from = "Column::DeletedBy",
+        to = "Column::Id",
+        on_update = "NoAction",
+        on_delete = "SetNull"
+    )]
+    SelfRef2,
+    #[sea_orm(
+        belongs_to = "Entity",
+        from = "Column::UpdatedBy",
+        to = "Column::Id",
+        on_update = "NoAction",
+        on_delete = "SetNull"
+    )]
+    SelfRef1,
 }
 
 impl Related<super::employees::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Employees.def()
+    }
+}
+
+impl Related<super::role::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Role.def()
     }
 }
 

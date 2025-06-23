@@ -2,7 +2,7 @@ use sea_orm::{EntityTrait, PaginatorTrait, TransactionTrait};
 
 use crate::{
     seeds::{
-        seeds_departments::seed_departments, seeds_employees::seeds_employees,
+        seeds_departments::seeds_departments, seeds_employees::seeds_employees,
         seeds_users::seeds_users,
     },
     tests::context::{init_db_lock, with_db_lock, TestContext},
@@ -17,7 +17,7 @@ async fn test_seeds_users_success() {
         ctx.reset().await;
 
         let txn = ctx.db.begin().await.expect("Failed to begin transaction");
-        seed_departments(&txn)
+        seeds_departments(&txn)
             .await
             .expect("Failed to seed departments");
         seeds_employees(&txn).await.expect("Failed to seed users");

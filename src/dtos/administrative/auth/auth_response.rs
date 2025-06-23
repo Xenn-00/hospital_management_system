@@ -7,8 +7,22 @@ pub struct LoginResponse {
 }
 
 #[derive(Debug, Serialize)]
-pub struct RegisterUserResponse {
-    pub username: String,
+pub struct AdminCreateEmployeeAccountResponse {
+    pub employee_id: i32,
     pub role: String,
-    pub is_active: bool,
+    pub status: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct VerifyOtpResponse {
+    pub message: String,
+    pub employee_id: i32,
+    pub temporary_setup_token: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct EmployeeRegisterUserResponse {
+    pub message: String,
+    pub status: String,
+    pub redirect_url: String,
 }

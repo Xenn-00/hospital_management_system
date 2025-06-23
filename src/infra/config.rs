@@ -19,7 +19,7 @@ pub struct Twilio {
     pub account_sid: String,
     pub auth_token: String,
     pub whatsapp_sandbox: String,
-    pub my_whatsapp: String,
+    pub to: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]

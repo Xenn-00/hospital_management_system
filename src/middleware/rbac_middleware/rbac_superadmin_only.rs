@@ -8,7 +8,7 @@ pub async fn rbac_superadmin_only(req: Request<Body>, next: Next) -> Result<Resp
         .get::<Claims>()
         .ok_or(AppError::AuthError("Missing claims".into()))?;
 
-    if claims.role != "Superadmin" {
+    if claims.role != "SUPERADMIN" {
         return Err(AppError::Forbidden("Superadmin only".into()));
     }
 

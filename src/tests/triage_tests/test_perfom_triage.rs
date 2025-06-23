@@ -37,10 +37,11 @@ async fn test_perfom_triage() {
         TestContext::clean_records(&ctx.db).await;
 
         let test_state = AppState {
-            db: ctx.db.clone(),
-            redis: ctx.redis.clone(),
-            s3: ctx.s3.clone(),
-            jwt_keys: ctx.jwt_keys.clone(),
+            db: ctx.db.clone().into(),
+            redis: ctx.redis.clone().into(),
+            s3: ctx.s3.clone().into(),
+            jwt_keys: ctx.jwt_keys.clone().into(),
+            twilio: ctx.twilio.into(),
         };
 
         let login = admin_login(test_state.clone()).await;
@@ -95,16 +96,21 @@ async fn test_perfom_triage() {
             .await
             .expect("Failed to fetch /api/v1/triage");
 
-        assert_eq!(response.status(), StatusCode::OK);
-
-        let body = response
+        let status = response.status();
+        let body_bytes = response
             .into_body()
             .collect()
             .await
-            .expect("Failed to collect body response")
+            .expect("Failed to fetch response into body")
             .to_bytes();
-        let json: serde_json::Value =
-            serde_json::from_slice(&body).expect("Failed parsing body bytes to json");
+        let body_str = String::from_utf8_lossy(&body_bytes);
+
+        println!("❗ Status: {status}, Body: {body_str}");
+
+        assert_eq!(status, StatusCode::OK);
+
+        let json: serde_json::Value = serde_json::from_slice(&body_bytes)
+            .expect("Failed to convert body bytes into json value");
 
         assert_eq!(json["message"], "Triage successful");
         assert!(json["data"]["patient_id"].is_number());

@@ -25,6 +25,12 @@ mod m20250612_032446_alter_table_employee;
 mod m20250612_072057_alter_table_employee_gender;
 mod m20250612_072813_alter_table_employee_gender_not_null;
 mod m20250616_092203_create_table_queue_number_tracker;
+mod m20250617_050120_create_roles_table;
+mod m20250617_063417_create_department_roles;
+mod m20250618_091557_alter_table_users_role;
+mod m20250619_064647_alter_table_users_audit;
+mod m20250622_070850_alter_table_user_initiate_null;
+mod m20250623_021346_alter_table_user_status_account;
 
 pub struct Migrator;
 
@@ -57,6 +63,12 @@ impl MigratorTrait for Migrator {
             Box::new(m20250612_072057_alter_table_employee_gender::Migration),
             Box::new(m20250612_072813_alter_table_employee_gender_not_null::Migration),
             Box::new(m20250616_092203_create_table_queue_number_tracker::Migration),
+            Box::new(m20250617_050120_create_roles_table::Migration),
+            Box::new(m20250617_063417_create_department_roles::Migration),
+            Box::new(m20250618_091557_alter_table_users_role::Migration),
+            Box::new(m20250619_064647_alter_table_users_audit::Migration),
+            Box::new(m20250622_070850_alter_table_user_initiate_null::Migration),
+            Box::new(m20250623_021346_alter_table_user_status_account::Migration),
         ]
     }
 }

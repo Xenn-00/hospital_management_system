@@ -1,41 +1,40 @@
-use axum::{Router, body::Body, middleware, routing::get};
-use http::{Request, StatusCode, header};
-use http_body_util::BodyExt;
-use redis::AsyncCommands;
-use tower::ServiceExt;
-use tower_http::{
-    request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer},
-    trace::TraceLayer,
-};
-
 use crate::{
-    handlers::triage::triage_handler::triage_queue,
+    handlers::administrative::auth::auth_handler::register_handler,
     middleware::{
         fn_middleware::request_middleware::assign_request_id,
         layer_middleware::{
             authenticate_layer::JwtAuthLayer, error_handler_layer::ErrorHandlingLayer,
         },
-        rbac_middleware::rbac_staff_only::rbac_staff_only,
+        rbac_middleware::rbac_superadmin_only::rbac_superadmin_only,
     },
     state::AppState,
     tests::{
         context::{LockKind, TestContext, with_lock},
-        util::admin_login,
+        util::{admin_login, create_test_employee},
     },
 };
 
+use axum::{Router, body::Body, middleware, routing::post};
+use http::{Request, StatusCode, header};
+use http_body_util::BodyExt;
+use serde_json::json;
+use tower::ServiceExt;
+use tower_http::{
+    request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer},
+    trace::TraceLayer,
+};
+use tracing::warn;
+
 #[tokio::test]
-async fn test_get_triage_queue() {
+async fn test_register_user() {
     let _ = tracing_subscriber::fmt()
         .with_max_level(tracing::Level::DEBUG)
         .with_test_writer()
         .try_init();
+
     with_lock(LockKind::Global, || async {
         let ctx = TestContext::new().await;
-        let visit_type = "common";
         TestContext::clean_records(&ctx.db).await;
-
-        TestContext::seed_patient(&ctx.db, visit_type).await;
 
         let test_state = AppState {
             db: ctx.db.clone().into(),
@@ -54,15 +53,29 @@ async fn test_get_triage_queue() {
             .as_str()
             .expect("Failed to fetch token_type");
 
+        let employee = create_test_employee(test_state.clone(), &access_token, &token_type).await;
+
+        warn!("{:?}", employee["id"]);
+
+        let employee_id = employee["id"]
+            .as_i64()
+            .expect("Failed to fetch employee id") as i32;
+
+        let payload = json!({
+            "employee_id": employee_id,
+            "role": "ADMHR",
+            "department_code": "DPT02"
+        });
+
         let app = Router::new()
-            .route("/api/v1/triage/queue/{visit_type}", get(triage_queue))
+            .route("/api/v1/auth/protected/register", post(register_handler))
             .layer(TraceLayer::new_for_http())
             .layer(ErrorHandlingLayer)
             .layer(PropagateRequestIdLayer::x_request_id())
             .layer(SetRequestIdLayer::x_request_id(MakeRequestUuid))
             .layer(middleware::from_fn_with_state(
-                test_state.clone().into(),
-                rbac_staff_only,
+                test_state.clone(),
+                rbac_superadmin_only,
             ))
             .layer(JwtAuthLayer {
                 app_state: test_state.clone(),
@@ -70,42 +83,34 @@ async fn test_get_triage_queue() {
             .layer(middleware::from_fn(assign_request_id))
             .with_state(test_state);
 
-        let cache_key = format!("triage:queue:{visit_type}");
-        let mut redis_conn = ctx.redis.get().await.expect("Failed to get connection");
-        let _: () = redis_conn
-            .del(&cache_key)
-            .await
-            .expect("Failed to delete cache");
-
         let response = app
             .oneshot(
-                Request::get(format!("/api/v1/triage/queue/{visit_type}"))
+                Request::post("/api/v1/auth/protected/register")
+                    .header("Content-Type", "application/json")
                     .header(
                         header::AUTHORIZATION,
                         format!("{token_type} {access_token}"),
                     )
-                    .body(Body::empty())
+                    .body(Body::from(payload.to_string()))
                     .expect("Failed to create request"),
             )
             .await
-            .expect("Failed to get response");
+            .expect("Failed to hit /api/v1/auth/protected/register");
+
+        assert_eq!(response.status(), StatusCode::OK);
 
         let status = response.status();
-        let body_bytes = response.into_body().collect().await.unwrap().to_bytes();
+        let body_bytes = response
+            .into_body()
+            .collect()
+            .await
+            .expect("Failed to fetch response into body")
+            .to_bytes();
         let body_str = String::from_utf8_lossy(&body_bytes);
 
         println!("❗ Status: {status}, Body: {body_str}");
 
-        assert_eq!(status, StatusCode::OK);
-
-        let json: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap();
-
-        assert_eq!(json["message"], "Get triage queue successful");
-        assert!(json["data"]["data"].is_array());
-        assert_eq!(json["data"]["visit_type"], visit_type);
-
         TestContext::clean_records(&ctx.db).await;
-        TestContext::cleanup_redis_keys(redis_conn, &cache_key).await;
     })
-    .await
+    .await;
 }

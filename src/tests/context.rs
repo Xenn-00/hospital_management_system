@@ -14,8 +14,8 @@ use bb8::Pool;
 use bb8_redis::RedisConnectionManager;
 use chrono::{Duration, NaiveDate, Utc};
 use entity::{
-    departments, employees, patients, patients_visit_intent, queue_ticket,
-    users::{self, Role},
+    department_roles, departments, employees, patients, patients_visit_intent, queue_ticket, role,
+    users::{self, AccountStatus},
 };
 
 use jsonwebtoken::{DecodingKey, EncodingKey};
@@ -32,7 +32,8 @@ use tokio::sync::Mutex;
 use once_cell::sync::Lazy;
 
 use crate::{
-    dtos::triage::create_triage_request::CreateTriageRequest, infra::config::AppConfig,
+    dtos::triage::create_triage_request::CreateTriageRequest,
+    infra::config::{AppConfig, Twilio},
     utils::jwt::JwtKeys,
 };
 
@@ -67,6 +68,7 @@ pub struct TestContext {
     pub redis: Pool<RedisConnectionManager>,
     pub s3: S3Client,
     pub jwt_keys: JwtKeys,
+    pub twilio: Twilio,
 }
 
 impl TestContext {
@@ -130,6 +132,7 @@ impl TestContext {
                     DecodingKey::from_rsa_pem(&public_key).expect("Failed to set decoding key"),
                 ),
             },
+            twilio: config.twilio,
         }
     }
 
@@ -139,10 +142,9 @@ impl TestContext {
             r#"
                 TRUNCATE TABLE 
                     patients, 
-                    patients_visit_intent, 
-                    queue_ticket, 
-                    referral_documents, 
-                    departments 
+                    departments,
+                    role,
+                    rooms
                 RESTART IDENTITY CASCADE;
             "#,
         );
@@ -194,6 +196,88 @@ impl TestContext {
             .expect("Failed to seed departments");
     }
 
+    pub async fn seed_role(conn: &DatabaseConnection) {
+        let initial_roles: HashMap<&str, &str> = vec![
+            ("SUPRADM", "SUPERADMIN"),
+            ("ADMGENR", "ADMIN_GENERAL"),
+            ("ADMHR", "ADMIN_HR"),
+            ("ADMFIN", "ADMIN_FINANCE"),
+            ("ADMTECH", "ADMIN_TECH"),
+            ("ADMSUPP", "ADMIN_SUPPORT"),
+            ("FRNSTFF", "FRONT_STAFF"),
+            ("DOCRGNL", "GENERAL_DOCTOR"),
+            ("DOCSPCL", "SPECIALIST_DOCTOR"),
+            ("NURSE", "NURSE"),
+            ("EMRGNCY", "EMERGENCY_STAFF"),
+            ("CASHIER", "CASHIER"),
+            ("LABSTFF", "LAB_STAFF"),
+            ("PHARMA", "PHARMACIST"),
+            ("PROCSTF", "PROCUREMENT_STAFF"),
+            ("SUPSTFF", "SUPPORT_STAFF"),
+            ("HEADDEP", "DEPARTMENT_HEAD"),
+        ]
+        .into_iter()
+        .collect();
+
+        let role_models: Vec<role::ActiveModel> = initial_roles
+            .into_iter()
+            .map(|(code, name)| role::ActiveModel {
+                code: Set(code.to_string()),
+                name: Set(name.to_string()),
+                ..Default::default()
+            })
+            .collect();
+
+        role::Entity::insert_many(role_models)
+            .on_conflict_do_nothing()
+            .exec(conn)
+            .await
+            .expect("Failed to seed role");
+    }
+
+    pub async fn seed_department_roles(conn: &DatabaseConnection) {
+        let dept_to_roles: HashMap<&str, Vec<&str>> = HashMap::from([
+            ("DPT01", vec!["ADMGENR", "FRNSTFF", "SUPRADM", "HEADDEP"]),
+            ("DPT02", vec!["ADMHR", "HEADDEP"]),
+            ("DPT03", vec!["ADMFIN", "CASHIER", "HEADDEP"]),
+            ("DPT04", vec!["ADMTECH", "SUPRADM", "HEADDEP"]),
+            ("DPT05", vec!["DOCRGNL", "DOCSPCL", "HEADDEP"]),
+            ("DPT06", vec!["EMRGNCY", "DOCRGNL", "HEADDEP"]),
+            ("DPT07", vec!["PROCSTF", "HEADDEP"]),
+            ("DPT08", vec!["NURSE", "HEADDEP"]),
+            ("DPT09", vec!["LABSTFF", "HEADDEP"]),
+            ("DPT10", vec!["ADMSUPP", "SUPSTFF", "HEADDEP"]),
+        ]);
+
+        let roles = role::Entity::find()
+            .all(conn)
+            .await
+            .expect("Failed to get roles");
+
+        let role_code_to_id: HashMap<String, i32> =
+            roles.into_iter().map(|r| (r.code, r.id)).collect();
+
+        let dept_models: Vec<department_roles::ActiveModel> = dept_to_roles
+            .into_iter()
+            .flat_map(|(dept_code, role_codes)| {
+                role_codes.into_iter().map({
+                    let value = role_code_to_id.clone();
+                    move |role_code| department_roles::ActiveModel {
+                        department_code: Set(dept_code.to_string()),
+                        role_id: Set(*value.get(role_code).expect("Failed to get role code")),
+                        ..Default::default()
+                    }
+                })
+            })
+            .collect();
+
+        department_roles::Entity::insert_many(dept_models)
+            .on_conflict_do_nothing()
+            .exec(conn)
+            .await
+            .expect("Failed to seed dept role");
+    }
+
     pub async fn seed_employee_and_user(conn: &DatabaseConnection) {
         let mut rng = rand::rng();
 
@@ -234,7 +318,7 @@ impl TestContext {
             .await
             .expect("Failed to insert employee");
 
-        // 2. create user
+        // 3. create user
 
         let now = Utc::now();
 
@@ -252,6 +336,11 @@ impl TestContext {
                 argon2::Version::V0x13,
                 Params::new(8, 1, 1, None).expect("Failed to initialize argon"),
             );
+            let role_model = role::Entity::find()
+                .filter(role::Column::Code.eq("SUPRADM"))
+                .one(conn)
+                .await
+                .expect("Failed to get role_id");
 
             let password_hash = argon2
                 .hash_password(password_raw.as_bytes(), &salt)
@@ -260,13 +349,13 @@ impl TestContext {
 
             let user = users::ActiveModel {
                 employee_id: Set(emp.id),
-                password: Set(password_hash),
-                username: Set(format!("superadmin")),
-                role: Set(Role::Superadmin),
+                password: Set(Some(password_hash)),
+                username: Set(Some(format!("superadmin"))),
+                role_id: Set(role_model.expect("Role not found").id),
                 last_login: Set(Some(
                     (now - Duration::days(rng.random_range(1..=30))).naive_utc(),
                 )),
-                is_active: Set(true),
+                account_status: Set(AccountStatus::Active),
                 ..Default::default()
             };
 

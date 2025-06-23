@@ -6,7 +6,7 @@ use sea_orm::DatabaseConnection;
 
 use crate::{
     dtos::triage::{
-        create_triage_request::CreateTriageRequest,
+        create_triage_request::{CreateTriageRequest, PaginationQuery},
         referral_upload_metadata::ReferralUploadMetadata,
         response::{
             CreateTriageResponse, ReferralUploadResponse, TriagePatientCalled, TriagePatientCancel,
@@ -26,6 +26,7 @@ pub trait TriageServiceContracts {
         db: &DatabaseConnection,
         redis: &Pool<RedisConnectionManager>,
         visit_type: String,
+        pagination: PaginationQuery,
     ) -> Result<TriageQueueResponse, AppError>;
     async fn get_triage_queue_status_by_id(
         db: &DatabaseConnection,

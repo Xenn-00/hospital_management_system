@@ -1,3 +1,4 @@
+pub mod seeds_department_roles;
 pub mod seeds_departments;
 pub mod seeds_doctor_schedules;
 pub mod seeds_doctors;
@@ -7,5 +8,6 @@ pub mod seeds_nurse_polyclinic_assignments;
 pub mod seeds_nurses;
 pub mod seeds_polyclinic;
 pub mod seeds_positions_title;
+pub mod seeds_roles;
 pub mod seeds_rooms;
 pub mod seeds_users;

@@ -1,7 +1,7 @@
 use sea_orm::{EntityTrait, PaginatorTrait, TransactionTrait};
 
 use crate::{
-    seeds::seeds_rooms::seed_rooms,
+    seeds::seeds_rooms::seeds_rooms,
     tests::context::{init_db_lock, with_db_lock, TestContext},
 };
 
@@ -14,7 +14,7 @@ async fn test_seeds_rooms_success() {
         ctx.reset().await;
 
         let txn = ctx.db.begin().await.expect("Failed to begin transaction");
-        let result = seed_rooms(&txn).await;
+        let result = seeds_rooms(&txn).await;
         assert!(result.is_ok(), "Seeding room failed: {:?}", result.err());
 
         let room_count = entity::rooms::Entity::find()
@@ -49,7 +49,7 @@ async fn test_seeds_rooms_skip() {
             .await
             .expect("Failed to count rooms");
 
-        let _ = seed_rooms(&txn).await;
+        let _ = seeds_rooms(&txn).await;
 
         let after = entity::rooms::Entity::find()
             .count(&txn)

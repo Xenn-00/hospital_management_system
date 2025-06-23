@@ -11,9 +11,9 @@ use uuid::Uuid;
 
 use log::error;
 
-use crate::error_handling::app_error::AppError;
-
-use super::request_middleware::RequestId;
+use crate::{
+    error_handling::app_error::AppError, middleware::fn_middleware::request_middleware::RequestId,
+};
 
 #[derive(Clone)]
 pub struct ErrorHandlingLayer;

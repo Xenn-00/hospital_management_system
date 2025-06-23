@@ -4,7 +4,7 @@ use sea_orm::{DatabaseTransaction, DbErr, EntityTrait, PaginatorTrait};
 
 use crate::helpers::generate_department;
 
-pub async fn seed_departments(txn: &DatabaseTransaction) -> Result<(), DbErr> {
+pub async fn seeds_departments(txn: &DatabaseTransaction) -> Result<(), DbErr> {
     // Insert sample data into the Departments table
     info!("🚀 Seeding departments...");
     let count = departments::Entity::find().count(txn).await?;

@@ -5,12 +5,12 @@ use argon2::{
 use chrono::{Duration, NaiveDate, NaiveTime, Utc};
 use log::warn;
 use rand::prelude::*;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use entity::{
-    departments, doctor_schedules, doctors, employee_position, employees, nurses,
-    nurses_polyclinic_assignments, polyclinic, position_titles, rooms,
-    user::{self, Role},
+    department_roles, departments, doctor_schedules, doctors, employee_position, employees, nurses,
+    nurses_polyclinic_assignments, polyclinic, position_titles, role, rooms,
+    users::{self, AccountStatus},
 };
 use sea_orm::ActiveValue::Set;
 
@@ -37,7 +37,7 @@ pub fn generate_department(department_list: Vec<&str>) -> Vec<departments::Activ
         .collect()
 }
 
-pub fn generate_employee(n: usize) -> Vec<employees::ActiveModel> {
+pub fn generate_employee(n: usize, superadmin_id: i32) -> Vec<employees::ActiveModel> {
     let mut rng = rand::rng();
 
     // Department distribution
@@ -75,41 +75,46 @@ pub fn generate_employee(n: usize) -> Vec<employees::ActiveModel> {
     dept_pool.shuffle(&mut rng);
     status_pool.shuffle(&mut rng);
 
-    (0..n)
-        .map(|i| {
-            let binding_dpt = "DPT01".to_string();
-            let dept_code = dept_pool.get(i % dept_pool.len()).unwrap_or(&binding_dpt);
-            let binding_status = "Permanent".to_string();
-            let status = status_pool
-                .get(i % status_pool.len())
-                .unwrap_or(&binding_status);
+    let mut employees = Vec::new();
 
-            let birth_year = rng.random_range(1970..=1995);
-            let birth_month = rng.random_range(1..=12);
-            let hire_year = rng.random_range(2015..=2023);
+    for i in 0..n {
+        let binding_dpt = "DPT01".to_string();
+        let dept_code = dept_pool.get(i % dept_pool.len()).unwrap_or(&binding_dpt);
+        let binding_status = "Permanent".to_string();
+        let status = status_pool
+            .get(i % status_pool.len())
+            .unwrap_or(&binding_status);
 
-            employees::ActiveModel {
-                full_name: Set(format!("Employee {}", i + 1)),
-                email: Set(format!("employee{}@test.com", i + 1)),
-                nip: Set(Some(format!(
-                    "{:04}{:02}{:02}2000{:02}{}{:03}",
-                    birth_year,
-                    birth_month,
-                    rng.random_range(1..=28),
-                    birth_month,
-                    rng.random_range(1..=2),
-                    i + 1
-                ))),
-                phone: Set(format!("+12345678{}90", i + 1)),
-                address: Set(format!("Address {}, City, Country", i + 1)),
-                department_code: Set(dept_code.to_string()),
-                birth_date: Set(NaiveDate::from_ymd_opt(birth_year, 1, 1).unwrap()),
-                employment_status: Set(status.to_string()),
-                hire_date: Set(NaiveDate::from_ymd_opt(hire_year, 1, 1).unwrap()),
-                ..Default::default()
-            }
-        })
-        .collect()
+        let birth_year = rng.random_range(1970..=1995);
+        let birth_month = rng.random_range(1..=12);
+        let birth_day = rng.random_range(1..=28);
+        let hire_year = rng.random_range(2015..=2023);
+
+        employees.push(employees::ActiveModel {
+            full_name: Set(format!("Employee {}", i + 1)),
+            email: Set(format!("employee{}@test.com", i + 1)),
+            created_by: Set(Some(superadmin_id)),
+            gender: Set(rng.random_range(1..=2)),
+            nip: Set(Some(format!(
+                "{:04}{:02}{:02}2000{:02}{}{:03}",
+                birth_year,
+                birth_month,
+                birth_day,
+                birth_month,
+                rng.random_range(1..=2),
+                i + 1
+            ))),
+            phone: Set(format!("+12345678{}90", i + 1)),
+            address: Set(format!("Address {}, City, Country", i + 1)),
+            department_code: Set(dept_code.to_string()),
+            birth_date: Set(NaiveDate::from_ymd_opt(birth_year, birth_month, birth_day).unwrap()),
+            employment_status: Set(status.to_string()),
+            hire_date: Set(NaiveDate::from_ymd_opt(hire_year, 1, 1).unwrap()),
+            ..Default::default()
+        });
+    }
+
+    employees
 }
 
 pub fn generate_doctor(
@@ -334,56 +339,154 @@ pub fn generate_nurses_polyclinic_assignments(
     assignments
 }
 
-pub fn generate_users(employee_ids_and_dept: Vec<(i32, String)>) -> Vec<user::ActiveModel> {
+pub fn generate_roles() -> Vec<role::ActiveModel> {
+    let initial_roles: HashMap<&str, &str> = vec![
+        ("SUPRADM", "SUPERADMIN"),
+        ("ADMGENR", "ADMIN_GENERAL"),
+        ("ADMHR", "ADMIN_HR"),
+        ("ADMFIN", "ADMIN_FINANCE"),
+        ("ADMTECH", "ADMIN_TECH"),
+        ("ADMSUPP", "ADMIN_SUPPORT"),
+        ("FRNSTFF", "FRONT_STAFF"),
+        ("DOCRGNL", "GENERAL_DOCTOR"),
+        ("DOCSPCL", "SPECIALIST_DOCTOR"),
+        ("NURSE", "NURSE"),
+        ("EMRGNCY", "EMERGENCY_STAFF"),
+        ("CASHIER", "CASHIER"),
+        ("LABSTFF", "LAB_STAFF"),
+        ("PHARMA", "PHARMACIST"),
+        ("PROCSTF", "PROCUREMENT_STAFF"),
+        ("SUPSTFF", "SUPPORT_STAFF"),
+        ("HEADDEP", "DEPARTMENT_HEAD"),
+    ]
+    .into_iter()
+    .collect();
+
+    initial_roles
+        .into_iter()
+        .map(|(code, name)| role::ActiveModel {
+            code: Set(code.to_string()),
+            name: Set(name.to_string()),
+            ..Default::default()
+        })
+        .collect()
+}
+
+pub fn generate_department_roles(
+    role_code_to_id: HashMap<String, i32>,
+) -> Vec<department_roles::ActiveModel> {
+    let dept_to_roles: HashMap<&str, Vec<&str>> = HashMap::from([
+        ("DPT01", vec!["ADMGENR", "FRNSTFF", "SUPRADM", "HEADDEP"]),
+        ("DPT02", vec!["ADMHR", "HEADDEP"]),
+        ("DPT03", vec!["ADMFIN", "CASHIER", "HEADDEP"]),
+        ("DPT04", vec!["ADMTECH", "SUPRADM", "HEADDEP"]),
+        ("DPT05", vec!["DOCRGNL", "DOCSPCL", "HEADDEP"]),
+        ("DPT06", vec!["EMRGNCY", "DOCRGNL", "HEADDEP"]),
+        ("DPT07", vec!["PROCSTF", "HEADDEP"]),
+        ("DPT08", vec!["NURSE", "HEADDEP"]),
+        ("DPT09", vec!["LABSTFF", "HEADDEP"]),
+        ("DPT10", vec!["ADMSUPP", "SUPSTFF", "HEADDEP"]),
+    ]);
+
+    dept_to_roles
+        .into_iter()
+        .flat_map(|(dept_code, role_codes)| {
+            role_codes.into_iter().map({
+                let value = role_code_to_id.clone();
+                move |role_code| department_roles::ActiveModel {
+                    department_code: Set(dept_code.to_string()),
+                    role_id: Set(*value.get(role_code).expect("Failed to get role code")),
+                    ..Default::default()
+                }
+            })
+        })
+        .collect()
+}
+
+pub fn generate_users(
+    employees: Vec<employees::Model>,
+    role_code_to_id: HashMap<String, i32>,
+) -> Vec<users::ActiveModel> {
     let mut rng = rand::rng();
     let now = Utc::now();
 
-    let dept_to_role = |dept: String| -> Role {
-        match dept.as_str() {
-            "DPT01" => Role::Admin,
-            "DPT02" => Role::Staff,
-            "DPT03" => Role::Cashier,
-            "DPT04" => Role::Staff,
-            "DPT05" => Role::Doctor,
-            "DPT06" => Role::Emergency,
-            "DPT07" => Role::Staff,
-            "DPT08" => Role::Nurse,
-            "DPT09" => Role::LabStaff,
-            "DPT10" => Role::Staff,
-            _ => Role::Staff,
+    let fallback_role = *role_code_to_id
+        .get("FRNSTFF")
+        .expect("Fallback role FRNSTFF not found");
+
+    let dept_to_roles = |dept_code: &str| -> Vec<&str> {
+        match dept_code {
+            "DPT01" => vec!["ADMGENR", "FRNSTFF", "SUPRADM", "HEADDEP"], // Administrative
+            "DPT02" => vec!["ADMHR", "HEADDEP"],                         // Human Resource
+            "DPT03" => vec!["ADMFIN", "CASHIER", "HEADDEP"],             // Finance
+            "DPT04" => vec!["ADMTECH", "SUPRADM", "HEADDEP"],            // IT
+            "DPT05" => vec!["DOCRGNL", "DOCSPCL", "HEADDEP"],            // Clinical
+            "DPT06" => vec!["EMRGNCY", "DOCRGNL", "HEADDEP"],            // Emergency
+            "DPT07" => vec!["PROCSTF", "HEADDEP"],                       // Procurement
+            "DPT08" => vec!["NURSE", "HEADDEP"],                         // Nursing
+            "DPT09" => vec!["LABSTFF", "HEADDEP"],                       // Laboratory
+            "DPT10" => vec!["ADMSUPP", "SUPSTFF", "HEADDEP"],            // Support
+            _ => vec!["FRNSTFF"],                                        // fallback
         }
     };
 
-    let mut users = Vec::new();
+    let mut headdep_given = HashSet::<String>::new();
+
     let argon2 = Argon2::new(
         argon2::Algorithm::Argon2id,
         argon2::Version::V0x13,
         Params::new(8, 1, 1, None).unwrap(),
     );
-    for (id, dept) in employee_ids_and_dept {
-        let role = dept_to_role(dept);
-        let username = format!("user_{}", id);
-        let password_raw = format!("{}{}", username, role.to_string().to_lowercase());
 
-        let salt = SaltString::generate(&mut OsRng);
+    employees
+        .into_iter()
+        .enumerate()
+        .map(|(i, e)| {
+            let username;
+            let password_raw;
+            let role_id;
 
-        let password_hash = argon2
-            .hash_password(password_raw.as_bytes(), &salt)
-            .expect("Failed to hash password")
-            .to_string();
+            if e.email == "superadmin@admin.com" {
+                username = "superadmin".to_string();
+                password_raw = "your_superadmin".to_string();
+                role_id = *role_code_to_id
+                    .get("SUPRADM")
+                    .expect("Role SUPRADM not found");
+            } else {
+                let mut role_codes = dept_to_roles(&e.department_code);
+                role_codes.shuffle(&mut rng);
+                if headdep_given.contains(&e.department_code) {
+                    role_codes.retain(|&code| code != "HEADDEP");
+                }
+                let selected_code = role_codes.get(i % role_codes.len()).unwrap_or(&"FRNSTFF");
+                if *selected_code == "HEADDEP" {
+                    headdep_given.insert(e.department_code.clone());
+                }
 
-        users.push(user::ActiveModel {
-            employee_id: Set(id),
-            password: Set(password_hash),
-            username: Set(username),
-            role: Set(role),
-            last_login: Set(Some(
-                (now - Duration::days(rng.random_range(1..=30))).naive_utc(),
-            )),
-            is_active: Set(true),
-            ..Default::default()
-        });
-    }
+                role_id = *role_code_to_id
+                    .get(*selected_code)
+                    .unwrap_or(&fallback_role);
+                username = format!("user_{}", e.id);
+                password_raw = format!("{}{}", username, selected_code.to_lowercase());
+            }
 
-    users
+            let salt = SaltString::generate(&mut OsRng);
+            let password_hash = argon2
+                .hash_password(password_raw.as_bytes(), &salt)
+                .expect("Failed to hash password")
+                .to_string();
+
+            users::ActiveModel {
+                employee_id: Set(e.id),
+                password: Set(Some(password_hash)),
+                username: Set(Some(username)),
+                role_id: Set(role_id),
+                last_login: Set(Some(
+                    (now - Duration::days(rng.random_range(1..=30))).naive_utc(),
+                )),
+                account_status: Set(AccountStatus::Active),
+                ..Default::default()
+            }
+        })
+        .collect()
 }

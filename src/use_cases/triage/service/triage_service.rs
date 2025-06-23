@@ -7,19 +7,13 @@ use chrono::{DateTime, Local, NaiveDateTime, Utc};
 use sea_orm::{DatabaseConnection, TransactionTrait};
 use uuid::Uuid;
 
-pub use crate::{
-    dtos::triage::{
-        create_triage_request::{CreateTriageRequest, VisitType},
-        response::CreateTriageResponse,
-    },
-    use_cases::triage::contracts::triage_service_contract::TriageServiceContracts,
-};
 use crate::{
     dtos::triage::{
+        create_triage_request::PaginationQuery,
         referral_upload_metadata::ReferralUploadMetadata,
         response::{
-            ReferralUploadResponse, TriagePatientCalled, TriagePatientCancel, TriageQueueComplete,
-            TriageQueueItem, TriageQueueResponse, TriageQueueStatus,
+            PaginationMeta, ReferralUploadResponse, TriagePatientCalled, TriagePatientCancel,
+            TriageQueueComplete, TriageQueueResponse, TriageQueueStatus,
         },
     },
     error_handling::app_error::AppError,
@@ -28,6 +22,13 @@ use crate::{
         contracts::triage_repo_contract::TriageTraitRepo, repo::triage_repo::TriageRepo,
     },
     utils::helpers::{get_cache_data, set_cache_data},
+};
+pub use crate::{
+    dtos::triage::{
+        create_triage_request::{CreateTriageRequest, VisitType},
+        response::CreateTriageResponse,
+    },
+    use_cases::triage::contracts::triage_service_contract::TriageServiceContracts,
 };
 
 pub struct TriageService;
@@ -69,33 +70,44 @@ impl TriageServiceContracts for TriageService {
         db: &DatabaseConnection,
         redis: &Pool<RedisConnectionManager>,
         visit_type: String,
+        pagination: PaginationQuery,
     ) -> Result<TriageQueueResponse, AppError> {
         let normalize_type: Result<VisitType, AppError> = parse_visit_type!(visit_type);
 
         let cache_key = format!("triage:queue:{}", normalize_type.as_ref()?);
 
-        if let Some(cached) = get_cache_data::<Vec<TriageQueueItem>>(&redis, &cache_key).await? {
-            let result = TriageQueueResponse {
-                visit_type: normalize_type?.to_string(),
-                data: cached,
-            };
-            return Ok(result);
+        let page = pagination.page.unwrap_or(1).max(1);
+        let per_page = pagination.per_page.unwrap_or(10).max(1);
+        let offset = (page - 1) * per_page;
+
+        if let Some(cached) = get_cache_data::<TriageQueueResponse>(&redis, &cache_key).await? {
+            return Ok(cached);
         }
 
-        let response =
-            <TriageRepo as TriageTraitRepo>::get_queue(&db, normalize_type.as_ref()?).await?;
+        let (total, data) = <TriageRepo as TriageTraitRepo>::get_queue(
+            db,
+            normalize_type.as_ref()?,
+            offset,
+            per_page,
+        )
+        .await?;
 
-        let result = TriageQueueResponse {
-            visit_type: normalize_type?.to_string(),
-            data: response.clone(),
+        let total_pages = (total + per_page - 1) / per_page;
+
+        let response = TriageQueueResponse {
+            visit_type,
+            data,
+            meta: PaginationMeta {
+                total,
+                page,
+                per_page,
+                total_pages,
+            },
         };
 
-        set_cache_data(&redis, &cache_key, &result, 300).await?;
+        set_cache_data(&redis, &cache_key, &response, 300).await?;
 
-        Ok(TriageQueueResponse {
-            visit_type,
-            data: response,
-        })
+        Ok(response)
     }
 
     async fn get_triage_queue_status_by_id(
@@ -149,7 +161,7 @@ impl TriageServiceContracts for TriageService {
             &queue_number
         );
 
-        if let Some(cached) = get_cache_data::<TriagePatientCalled>(&redis, &cache_key).await? {
+        if let Ok(Some(cached)) = get_cache_data::<TriagePatientCalled>(&redis, &cache_key).await {
             return Ok(cached);
         }
 
@@ -166,10 +178,11 @@ impl TriageServiceContracts for TriageService {
         let result = TriagePatientCalled {
             queue_number: response.queue_number,
             queue_type: response.queue_type,
+            status: response.status,
             called_at: formatted,
         };
 
-        set_cache_data(&redis, &cache_key, &result, 300).await?;
+        set_cache_data(&redis, &cache_key, &result, 30).await?;
 
         Ok(result)
     }
@@ -285,7 +298,7 @@ impl TriageServiceContracts for TriageService {
             .send()
             .await?;
 
-        let url = format!("http://localhost:9000/{}/{}", bucket_name, &filename);
+        let url = format!("{}/{}", bucket_name, &filename);
 
         let txn = db.begin().await?;
 

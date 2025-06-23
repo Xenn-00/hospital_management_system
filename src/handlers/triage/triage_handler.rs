@@ -1,14 +1,13 @@
 use axum::{
     Extension, Json,
-    extract::{Multipart, Path, State},
+    extract::{Multipart, Path, Query, State},
 };
 
-use log::info;
 use validator::Validate;
 
 use crate::{
     dtos::triage::{
-        create_triage_request::CreateTriageRequest,
+        create_triage_request::{CreateTriageRequest, PaginationQuery},
         referral_upload_metadata::ReferralUploadMetadata,
         response::{
             CreateTriageResponse, ReferralUploadResponse, TriagePatientCalled, TriagePatientCancel,
@@ -17,7 +16,7 @@ use crate::{
     },
     error_handling::app_error::AppError,
     infra::api::ApiResponse,
-    middleware::request_middleware::RequestId,
+    middleware::fn_middleware::request_middleware::RequestId,
     state::AppState,
     use_cases::triage::service::triage_service::{TriageService, TriageServiceContracts},
     utils::helpers::read_bytes_from_multipart_field,
@@ -47,12 +46,15 @@ pub async fn triage_queue(
     State(state): State<AppState>,
     Extension(request_id): Extension<RequestId>,
     Path(visit_type): Path<String>,
+    Query(pagination): Query<PaginationQuery>,
 ) -> Result<Json<ApiResponse<TriageQueueResponse>>, AppError> {
     let db = &state.db;
     let redis = &state.redis;
 
-    let result =
-        <TriageService as TriageServiceContracts>::get_triage_queue(db, redis, visit_type).await?;
+    let result = <TriageService as TriageServiceContracts>::get_triage_queue(
+        db, redis, visit_type, pagination,
+    )
+    .await?;
 
     let response = ApiResponse {
         message: "Get triage queue successful".to_string(),
@@ -219,11 +221,6 @@ pub async fn triage_referral_document_upload(
             ));
         }
     };
-
-    info!(
-        "Uploading file for patient_id: {}, visit_id: {}, filename: {}",
-        patient_id, visit_id, &meta.original_filename,
-    );
 
     let result = <TriageService as TriageServiceContracts>::handle_referral_upload(
         db, s3, visit_id, patient_id, meta,

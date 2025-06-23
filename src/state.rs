@@ -1,29 +1,37 @@
-use std::time::Duration;
+use std::{fs::read, sync::Arc, time::Duration};
 
 use aws_config::Region;
 use aws_sdk_s3::{
     Client,
     config::{Builder, Credentials, SharedCredentialsProvider},
 };
+use axum::extract::FromRef;
 use bb8::Pool;
 use bb8_redis::RedisConnectionManager;
+use jsonwebtoken::{DecodingKey, EncodingKey};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 
-use crate::infra::config::S3Config;
+use crate::{
+    error_handling::app_error::AppError,
+    infra::config::{S3Config, Twilio},
+    utils::jwt::JwtKeys,
+};
 
 type RedisPool = Pool<RedisConnectionManager>;
-#[derive(Clone)]
+#[derive(Clone, FromRef)]
 pub struct AppState {
-    pub db: DatabaseConnection,
-    pub redis: RedisPool,
-    pub s3: Client,
+    pub db: Arc<DatabaseConnection>,
+    pub redis: Arc<RedisPool>,
+    pub s3: Arc<Client>,
+    pub jwt_keys: Arc<JwtKeys>,
+    pub twilio: Arc<Twilio>,
 }
 
 pub async fn init_database_connection(url: &str) -> DatabaseConnection {
     let mut options = ConnectOptions::new(url);
     options
-        .max_connections(20)
-        .min_connections(5)
+        .max_connections(50)
+        .min_connections(10)
         .connect_timeout(Duration::from_secs(10))
         .idle_timeout(Duration::from_secs(300))
         .sqlx_logging(true);
@@ -38,7 +46,7 @@ pub async fn init_redis_pool(redis_url: &str) -> RedisPool {
         RedisConnectionManager::new(redis_url).expect("Failed to connect to redis server");
 
     Pool::builder()
-        .max_size(20)
+        .max_size(50)
         .min_idle(Some(10))
         .idle_timeout(Some(Duration::from_secs(300)))
         .max_lifetime(Some(Duration::from_secs(1800)))
@@ -60,4 +68,14 @@ pub async fn init_s3_client(cfg: &S3Config) -> Client {
         .build();
 
     Client::from_conf(conf)
+}
+
+pub fn load_jwt_keys() -> Result<JwtKeys, AppError> {
+    let private_key = read("private_key.pem")?;
+    let public_key = read("public_key.pem")?;
+
+    Ok(JwtKeys {
+        encoding: Arc::new(EncodingKey::from_rsa_pem(&private_key)?),
+        decoding: Arc::new(DecodingKey::from_rsa_pem(&public_key)?),
+    })
 }

@@ -1,5 +1,3 @@
-use chrono::{DateTime, Utc};
-
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -15,14 +13,24 @@ pub struct CreateTriageResponse {
 pub struct TriageQueueResponse {
     pub visit_type: String,
     pub data: Vec<TriageQueueItem>,
+    pub meta: PaginationMeta,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PaginationMeta {
+    pub total: i32,
+    pub page: i32,
+    pub per_page: i32,
+    pub total_pages: i32,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TriageQueueItem {
     pub queue_number: i32,
     pub patient_id: i32,
+    pub visit_id: i32,
     pub status: String,
-    pub created_at: DateTime<Utc>,
+    pub created_at: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -37,6 +45,7 @@ pub struct TriageQueueStatus {
 pub struct TriagePatientCalled {
     pub queue_number: i32,
     pub queue_type: String,
+    pub status: String,
     pub called_at: String,
 }
 

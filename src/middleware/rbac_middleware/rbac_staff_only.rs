@@ -20,13 +20,15 @@ pub async fn rbac_staff_only(
         .get::<Claims>()
         .ok_or(AppError::AuthError("Missing claims".into()))?;
 
-    if claims.role != "staff"
-        && claims.role != "triage_staff"
-        && claims.role != "nurse"
-        && claims.role != "SUPERADMIN"
+    if claims.role == "SUPERADMIN"
+        || claims.role == "ADMIN_GENERAL"
+        || claims.role == "FRONT_STAFF"
+        || claims.role == "DEPARTMENT_HEAD"
+        || claims.role == "EMERGENCY_STAFF"
+        || claims.role == "SUPPORT_STAFF"
     {
-        return Err(AppError::Forbidden("Insufficient permissions".into()));
+        return Ok(next.run(req).await);
     }
 
-    Ok(next.run(req).await)
+    Err(AppError::Forbidden("Insufficient permissions".into()))
 }

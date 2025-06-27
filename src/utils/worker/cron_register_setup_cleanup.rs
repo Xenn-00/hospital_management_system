@@ -1,11 +1,21 @@
 use bb8::Pool;
 use bb8_redis::RedisConnectionManager;
 use chrono::{Duration, Utc};
-use entity::users::{self, AccountStatus};
+use entity::sea_orm_active_enums::AccountStatus;
+use entity::users;
 use redis::AsyncCommands;
 use sea_orm::prelude::Expr;
-use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
+use sea_orm::{
+    ColumnTrait, DatabaseConnection, EntityOrSelect, EntityTrait, FromQueryResult, QueryFilter,
+    QuerySelect,
+};
 use tokio_cron_scheduler::{Job, JobScheduler};
+
+#[derive(Debug, FromQueryResult)]
+struct PartialUser {
+    id: i32,
+    employee_id: i32,
+}
 
 pub async fn cron_register_setup_cleanup(
     db: DatabaseConnection,
@@ -40,6 +50,10 @@ pub async fn cron_register_setup_cleanup(
                         .filter(users::Column::Username.is_null())
                         .filter(users::Column::Password.is_null())
                         .filter(users::Column::CreatedAt.lt(Utc::now() - Duration::minutes(5)))
+                        .select()
+                        .column(users::Column::Id)
+                        .column(users::Column::EmployeeId)
+                        .into_model::<PartialUser>()
                         .all(&db)
                         .await
                     else {
@@ -52,35 +66,43 @@ pub async fn cron_register_setup_cleanup(
                         return;
                     }
 
-                    let mut user_ids_to_reset = Vec::new();
+                    let keys: Vec<String> = bad_users
+                        .iter()
+                        .map(|user| format!("setup:{}", user.employee_id))
+                        .collect();
 
-                    for user in bad_users {
-                        let cache_key = format!("setup:{}", user.employee_id);
-                        let exist = match redis_conn.exists(&cache_key).await {
-                            Ok(true) => true,
-                            Ok(false) => false,
-                            Err(e) => {
-                                tracing::error!("[Worker] Redis error on key {}: {}", cache_key, e);
-                                return;
-                            }
-                        };
-
-                        if exist {
-                            tracing::info!(
-                                "[Worker] Skipping user {} (still has setup token)",
-                                user.id
-                            );
-                            continue;
+                    let exists: Vec<bool> = match redis_conn.exists(keys).await {
+                        Ok(values) => values,
+                        Err(e) => {
+                            tracing::error!("[Worker] Redis exists error: {}", e);
+                            return;
                         }
+                    };
 
-                        tracing::info!("[Worker] Resetting user {} status (expired)", user.id);
-                        user_ids_to_reset.push(user.id);
-                    }
+                    let expired_user_ids: Vec<i32> = bad_users
+                        .into_iter()
+                        .zip(exists.into_iter())
+                        .filter_map(|(user, is_exist)| {
+                            if is_exist {
+                                tracing::info!(
+                                    "[Worker] Skipping user {} (still has setup token)",
+                                    user.id
+                                );
+                                None
+                            } else {
+                                tracing::info!(
+                                    "[Worker] Resetting user {} status (expired)",
+                                    user.id
+                                );
+                                Some(user.id)
+                            }
+                        })
+                        .collect();
 
-                    if !user_ids_to_reset.is_empty() {
+                    if !expired_user_ids.is_empty() {
                         tracing::info!(
                             "[Worker] Resetting status for users: {:?}",
-                            user_ids_to_reset
+                            expired_user_ids
                         );
 
                         let update_result = users::Entity::update_many()
@@ -88,21 +110,24 @@ pub async fn cron_register_setup_cleanup(
                                 users::Column::AccountStatus,
                                 Expr::value(AccountStatus::PendingVerification),
                             )
-                            .filter(users::Column::Id.is_in(user_ids_to_reset))
+                            .filter(users::Column::Id.is_in(expired_user_ids))
                             .exec(&db)
                             .await;
 
                         match update_result {
                             Ok(res) => tracing::info!(
-                                "[Worker] Successfully reset {} users.",
+                                "[Worker Successfully reset {} users.]",
                                 res.rows_affected
                             ),
                             Err(e) => {
-                                tracing::error!("[Worker] Failed to bulk update users: {}", e)
+                                tracing::error!(
+                                    "[Worker] Encounter error when bulk update users: {}",
+                                    e
+                                )
                             }
                         }
                     } else {
-                        tracing::info!("[Worker] No users needed a reset. Job finished.");
+                        tracing::info!("[Worker] No users needed a reset. Job finished.")
                     }
                 })
             })

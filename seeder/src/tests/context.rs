@@ -21,8 +21,9 @@ pub struct TestContext {
 
 impl TestContext {
     pub async fn new() -> Self {
-        let app_config =
-            AppConfig::from_yaml("../application.yaml").expect("Failed to read app config");
+        let app_config = AppConfig::from_yaml("../application.yaml")
+            .await
+            .expect("Failed to read app config");
         let test_url = app_config.database.test_url;
 
         let mut options = ConnectOptions::new(test_url);

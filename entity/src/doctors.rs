@@ -13,7 +13,6 @@ pub struct Model {
     pub specialization: String,
     #[sea_orm(unique)]
     pub license_number: String,
-    pub room_code: String,
     pub polyclinic_id: i32,
     pub created_at: DateTime,
 }
@@ -38,14 +37,6 @@ pub enum Relation {
         on_delete = "Cascade"
     )]
     Polyclinic,
-    #[sea_orm(
-        belongs_to = "super::rooms::Entity",
-        from = "Column::RoomCode",
-        to = "super::rooms::Column::Code",
-        on_update = "NoAction",
-        on_delete = "Cascade"
-    )]
-    Rooms,
 }
 
 impl Related<super::doctor_schedules::Entity> for Entity {
@@ -63,12 +54,6 @@ impl Related<super::employees::Entity> for Entity {
 impl Related<super::polyclinic::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Polyclinic.def()
-    }
-}
-
-impl Related<super::rooms::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::Rooms.def()
     }
 }
 

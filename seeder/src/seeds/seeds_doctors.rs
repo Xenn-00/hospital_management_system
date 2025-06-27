@@ -1,4 +1,4 @@
-use entity::{doctors, rooms};
+use entity::doctors;
 use log::info;
 use sea_orm::{ColumnTrait, DatabaseTransaction, DbErr, EntityTrait, PaginatorTrait, QueryFilter};
 
@@ -24,14 +24,6 @@ pub async fn seeds_doctors(txn: &DatabaseTransaction) -> Result<(), DbErr> {
         ));
     }
 
-    let available_rooms = rooms::Entity::find()
-        .filter(rooms::Column::Status.eq("OCCUPIED".to_string()))
-        .filter(rooms::Column::RoomType.eq("POLYCLINIC".to_string()))
-        .all(txn)
-        .await?;
-
-    let rooms: Vec<String> = available_rooms.into_iter().map(|room| room.code).collect();
-
     let polyclinics = entity::polyclinic::Entity::find().all(txn).await?;
 
     let polyclinics_ids_and_names: Vec<(i32, String)> =
@@ -41,9 +33,8 @@ pub async fn seeds_doctors(txn: &DatabaseTransaction) -> Result<(), DbErr> {
     let employees_ids: Vec<i32> = employees.into_iter().map(|e| e.id).collect();
 
     let doctor_models = generate_doctor(
-        (employees_ids.len() as f64 * 0.3) as i32,
+        (employees_ids.len() as f64 * 0.45) as i32,
         employees_ids,
-        rooms,
         polyclinics_ids_and_names,
     );
 

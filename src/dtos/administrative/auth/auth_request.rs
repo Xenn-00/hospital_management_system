@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use validator::Validate;
 
 use crate::utils::validation::employee_request_validation::{validate_password, validate_username};
@@ -41,4 +41,15 @@ pub struct EmployeeRegisterUserRequest {
 pub struct SetupUserQuery {
     pub setup_token: String,
     pub employee_id: i32,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ResendOTPQuery {
+    pub employee_id: i32,
+}
+
+#[derive(Debug, Serialize)]
+pub struct SendOTPPayloadPubSub {
+    pub to: String,
+    pub otp: String,
 }

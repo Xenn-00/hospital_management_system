@@ -34,6 +34,12 @@ pub trait AuthServiceContract {
         claims: Claims,
         payload: AdminCreateEmployeeAccountRequest,
     ) -> Result<AdminCreateEmployeeAccountResponse, AppError>;
+    async fn resend_otp(
+        db: &DatabaseConnection,
+        redis: &Pool<RedisConnectionManager>,
+        twilio: &Twilio,
+        employee_id: i32,
+    ) -> Result<String, AppError>;
     async fn verify_user(
         db: &DatabaseConnection,
         redis: &Pool<RedisConnectionManager>,

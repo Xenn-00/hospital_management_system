@@ -12,12 +12,14 @@ use hospital_management_system::{
             auth_route::{auth_routes_protected, auth_routes_public},
             employment_route::employment_routes,
         },
-        triage_route::triage_routes,
+        medical::polyclinic_route::polyclinic_routes,
+        patients::triage_route::triage_routes,
     },
     state::{AppState, init_database_connection, init_redis_pool, init_s3_client, load_jwt_keys},
-    utils::worker::cron_register_setup_cleanup::cron_register_setup_cleanup,
+    utils::worker::{
+        cron_register_setup_cleanup::cron_register_setup_cleanup, worker_send_otp::worker_send_otp,
+    },
 };
-use log::info;
 
 use std::{net::ToSocketAddrs, sync::Arc, time::Duration};
 use tokio::{net::TcpListener, signal};
@@ -26,25 +28,33 @@ use tower_http::{limit::RequestBodyLimitLayer, timeout::TimeoutLayer, trace::Tra
 
 #[tokio::main]
 async fn main() {
-    log4rs::init_file("log4rs.yaml", Default::default()).expect("Failed to load log4rs.yaml");
-    let app_config =
-        AppConfig::from_yaml("application.yaml").expect("Failed to load application.yaml");
+    let _ = tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        .with_test_writer()
+        .try_init();
+    let app_config = AppConfig::from_yaml("application.yaml")
+        .await
+        .expect("Failed to load application.yaml");
 
-    let jwt_keys = load_jwt_keys().expect("Failed to fetch jwt keys");
+    let jwt_keys = load_jwt_keys().await.expect("Failed to fetch jwt keys");
 
     let twilio = app_config.twilio;
 
     // Parallel initialization
     let (db, redis_pool, s3) = tokio::join!(
         init_database_connection(&app_config.database.url),
-        init_redis_pool(&app_config.redis.upstash_redis_url),
+        init_redis_pool(&app_config.redis.docker_redis_url),
         init_s3_client(&app_config.s3)
     );
 
-    info!("Connected to DB, Redis, and S3 successfully");
+    tracing::info!("Connected to DB, Redis, and S3 successfully");
 
     // Crons
     tokio::spawn(cron_register_setup_cleanup(db.clone(), redis_pool.clone()));
+    tokio::spawn(worker_send_otp(
+        twilio.clone(),
+        app_config.redis.docker_redis_url.clone(),
+    ));
 
     let app_state = Arc::new(AppState {
         db: db.into(),
@@ -65,7 +75,7 @@ async fn main() {
         .await
         .unwrap_or_else(|_| panic!("Failed to bind to address: {}", bind_address));
 
-    info!("Listening on {:?}", listener.local_addr().unwrap());
+    tracing::info!("Listening on {:?}", listener.local_addr().unwrap());
     axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())
         .await
@@ -78,10 +88,7 @@ fn build_router(app_state: Arc<AppState>) -> Router {
     };
 
     Router::new()
-        .nest(
-            "/api/v1/auth/public",
-            auth_routes_public(app_state.clone().into()),
-        )
+        .nest("/api/v1/auth/public", auth_routes_public())
         .nest(
             "/api/v1/triage",
             triage_routes(app_state.clone().into()).layer(authed_layer.clone()),
@@ -92,11 +99,16 @@ fn build_router(app_state: Arc<AppState>) -> Router {
         )
         .nest(
             "/api/v1/employee",
-            employment_routes(app_state.clone().into()).layer(authed_layer),
+            employment_routes(app_state.clone().into()).layer(authed_layer.clone()),
+        )
+        .nest(
+            "/api/v1/medical",
+            polyclinic_routes(app_state.clone().into()).layer(authed_layer),
         )
         .layer(middleware::from_fn(assign_request_id))
         .layer(
             ServiceBuilder::new()
+                .layer(TraceLayer::new_for_http())
                 .layer(RequestBodyLimitLayer::new(10 * 1024 * 1024)) // 10 MB
                 .layer(TimeoutLayer::new(Duration::from_secs(15))) // Timeout protection
                 .layer(ErrorHandlingLayer),
@@ -126,7 +138,7 @@ async fn shutdown_signal() {
         _ = terminate => {},
     }
 
-    info!("Shutdown signal received, exiting...");
+    tracing::info!("Shutdown signal received, exiting...");
     std::panic::set_hook(Box::new(|panic_info| {
         eprintln!("PANIC OCCURRED: {:?}", panic_info);
     }));

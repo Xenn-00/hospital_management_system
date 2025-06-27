@@ -12,7 +12,7 @@ use crate::{
 };
 
 pub fn employment_routes(app_state: Arc<AppState>) -> Router<AppState> {
-    Router::with_state(Router::new(), app_state.clone())
+    Router::new()
         .route("/register", post(register_employee))
         .layer(middleware::from_fn_with_state(
             app_state,

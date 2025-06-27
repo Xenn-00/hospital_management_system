@@ -31,6 +31,7 @@ mod m20250618_091557_alter_table_users_role;
 mod m20250619_064647_alter_table_users_audit;
 mod m20250622_070850_alter_table_user_initiate_null;
 mod m20250623_021346_alter_table_user_status_account;
+mod m20250625_082359_alter_table_doctor_room_code;
 
 pub struct Migrator;
 
@@ -69,6 +70,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20250619_064647_alter_table_users_audit::Migration),
             Box::new(m20250622_070850_alter_table_user_initiate_null::Migration),
             Box::new(m20250623_021346_alter_table_user_status_account::Migration),
+            Box::new(m20250625_082359_alter_table_doctor_room_code::Migration),
         ]
     }
 }

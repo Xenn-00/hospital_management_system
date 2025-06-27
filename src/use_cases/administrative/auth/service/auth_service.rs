@@ -3,13 +3,11 @@ use async_trait::async_trait;
 use bb8::Pool;
 use bb8_redis::RedisConnectionManager;
 use chrono::Utc;
-use entity::{
-    department_roles, employees, role,
-    users::{self, AccountStatus},
-};
+use entity::{department_roles, employees, role, sea_orm_active_enums::AccountStatus, users};
+
 use sea_orm::{
-    ActiveValue::Set, ColumnTrait, DatabaseConnection, DbErr, EntityOrSelect, EntityTrait,
-    QueryFilter, QuerySelect, TransactionTrait,
+    ActiveValue::Set, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter,
+    QuerySelect, TransactionTrait,
 };
 use uuid::Uuid;
 
@@ -17,7 +15,7 @@ use crate::{
     dtos::administrative::auth::{
         auth_request::{
             AdminCreateEmployeeAccountRequest, EmployeeRegisterUserRequest, LoginRequest,
-            VerifyOtpRequest,
+            SendOTPPayloadPubSub, VerifyOtpRequest,
         },
         auth_response::{
             AdminCreateEmployeeAccountResponse, EmployeeRegisterUserResponse, LoginResponse,
@@ -34,7 +32,7 @@ use crate::{
     },
     utils::{
         helpers::{
-            delete_cache_data, generate_otp, get_cache_data, hash_password, send_otp_via_whatsapp,
+            delete_cache_data, generate_otp, get_cache_data, hash_password, publish_message,
             set_cache_data, verify_password,
         },
         jwt::{Claims, JwtKeys, generate_jwt},
@@ -129,8 +127,6 @@ impl AuthServiceContract for AuthService {
         // 2. check if user already registered, if yes, then abort
         let user_exists = users::Entity::find()
             .filter(users::Column::EmployeeId.eq(employee.id))
-            .select()
-            .column(users::Column::Id)
             .one(db)
             .await?
             .is_some();
@@ -183,17 +179,23 @@ impl AuthServiceContract for AuthService {
         let register = <AuthRepo as AuthRepoContract>::register_new_user(&txn, new_user).await?;
         txn.commit().await?;
 
+        tracing::info!("Registering user for employee_id: {}", employee_id);
+
         // 5. send otp and return
         let otp = generate_otp();
 
-        let to = &twilio.to; // still in dev and have no enough money to buy twilio pro 🫠, in prod we should change it to actual employee phone number
-        let from = &twilio.whatsapp_sandbox; // still in dev and have no enough money to buy twilio pro 🫠
-        let account_sid = &twilio.account_sid;
-        let auth_token = &twilio.auth_token;
-
         let cache_key = format!("otp:{}", &register.employee_id);
-        set_cache_data(&redis, &cache_key, &otp, 120).await?;
-        send_otp_via_whatsapp(to, from, auth_token, account_sid, &otp).await?;
+
+        tracing::info!("OTP generated and cached with key: {}", cache_key);
+
+        set_cache_data(&redis, &cache_key, &otp, 120).await?; // key for verify otp later
+
+        let pub_sub_payload = SendOTPPayloadPubSub {
+            to: twilio.to.clone(), // still in dev and have no enough money to buy twilio pro 🫠, in prod we should change it to actual employee phone number
+            otp,
+        };
+
+        publish_message(&redis, "send_otp_channel", &pub_sub_payload).await?;
 
         Ok(AdminCreateEmployeeAccountResponse {
             employee_id: register.employee_id,
@@ -201,6 +203,64 @@ impl AuthServiceContract for AuthService {
             status: format!("{:?}", register.account_status),
         })
     }
+
+    async fn resend_otp(
+        db: &DatabaseConnection,
+        redis: &Pool<RedisConnectionManager>,
+        twilio: &Twilio,
+        employee_id: i32,
+    ) -> Result<String, AppError> {
+        // check if employee exists
+        let user = match users::Entity::find()
+            .filter(users::Column::EmployeeId.eq(employee_id))
+            .one(db)
+            .await
+        {
+            Ok(Some(user)) => user,
+            Ok(None) => {
+                return Err(AppError::NotFound(format!(
+                    "Employee with ID {} not found",
+                    employee_id
+                )));
+            }
+            Err(e) => {
+                tracing::error!(
+                    "[DB] Can't find employee with id {}, error: {}",
+                    employee_id,
+                    e
+                );
+                return Err(AppError::Internal(format!(
+                    "Unexpected error occur when find employee {}",
+                    employee_id
+                )));
+            }
+        };
+
+        if user.account_status != AccountStatus::PendingVerification {
+            return Err(AppError::BadRequest(format!(
+                "Account already verified or not pending verification"
+            )));
+        }
+
+        // generate new otp
+        let otp = generate_otp();
+        let cache_key = format!("otp:{}", employee_id);
+
+        set_cache_data(&redis, &cache_key, &otp, 120).await?;
+
+        let pub_sub_payload = SendOTPPayloadPubSub {
+            to: twilio.to.clone(), // still in dev and have no enough money to buy twilio pro 🫠, in prod we should change it to actual employee phone number
+            otp,
+        };
+
+        publish_message(&redis, "send_otp_channel", &pub_sub_payload).await?;
+
+        Ok(format!(
+            "OTP resent successfully to employee ID {}",
+            employee_id
+        ))
+    }
+
     async fn verify_user(
         db: &DatabaseConnection,
         redis: &Pool<RedisConnectionManager>,
@@ -240,7 +300,7 @@ impl AuthServiceContract for AuthService {
 
         // 3. update account status
         let mut active_model: users::ActiveModel = user.into();
-        active_model.account_status = Set(users::AccountStatus::AwaitingSetup);
+        active_model.account_status = Set(AccountStatus::Active);
 
         users::Entity::update(active_model).exec(db).await?;
         // 4. set temporary token for employee to proceed

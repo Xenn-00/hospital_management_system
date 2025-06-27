@@ -33,3 +33,33 @@ macro_rules! format_created_at {
         local.format("%d-%m-%Y %H:%M:%S").to_string()
     }};
 }
+
+#[macro_export]
+macro_rules! json_ok {
+    ($msg:expr, $data:expr, $req_id:expr) => {
+        Ok(axum::Json($crate::infra::api::ApiResponse {
+            message: $msg.to_string(),
+            data: Some($data),
+            request_id: $req_id.0.clone(),
+            errors: None,
+        }))
+    };
+}
+
+#[macro_export]
+macro_rules! json_error {
+    ($status:expr, $msg:expr, $req_id:expr) => {{
+        use axum::Json;
+        use axum::response::{IntoResponse, Response};
+        use $crate::dto::response::ApiResponse;
+
+        let body = ApiResponse::<()> {
+            message: $msg.to_string(),
+            data: None,
+            request_id: $req_id.0.clone(),
+            errors: None,
+        };
+
+        ($status, Json(body)).into_response()
+    }};
+}

@@ -9,8 +9,6 @@ use tower::{Layer, Service};
 use tracing::{Instrument, info_span};
 use uuid::Uuid;
 
-use log::error;
-
 use crate::{
     error_handling::app_error::AppError, middleware::fn_middleware::request_middleware::RequestId,
 };
@@ -66,7 +64,7 @@ where
                     Ok(res) => Ok(res),
                     Err(err) => {
                         let app_err: AppError = AppError::Internal(format!("{:?}", err.into()));
-                        error!("Error caught in middleware: {}", app_err);
+                        tracing::error!("Error caught in middleware: {}", app_err);
                         Ok(app_err.into_response())
                     }
                 }

@@ -1,9 +1,11 @@
+use std::collections::HashMap;
+
 use chrono::NaiveTime;
-use entity::{doctor_schedules, doctors};
-use log::info;
+use entity::{doctor_schedules, doctors, polyclinic};
+use log::{info, warn};
 use sea_orm::{DatabaseTransaction, DbErr, EntityTrait, PaginatorTrait};
 
-use crate::helpers::{generate_doctor_schedules, Doctor};
+use crate::helpers::{generate_doctor_schedules, DoctorPoly};
 
 pub async fn seeds_doctor_schedules(txn: &DatabaseTransaction) -> Result<(), DbErr> {
     info!("🚀 Seeding doctor schedules...");
@@ -14,14 +16,29 @@ pub async fn seeds_doctor_schedules(txn: &DatabaseTransaction) -> Result<(), DbE
     }
 
     let doctors = doctors::Entity::find().all(txn).await?;
-    let doctor_meta: Vec<Doctor> = doctors
-        .into_iter()
-        .map(|doc| Doctor {
-            id: doc.id,
-            poly_id: doc.polyclinic_id,
-            room_code: doc.room_code,
-        })
+    let polyclinics = polyclinic::Entity::find().all(txn).await?;
+
+    let poly_map: HashMap<String, (i32, String)> = polyclinics
+        .iter()
+        .map(|p| (p.name.to_lowercase(), (p.id, p.room_code.clone())))
         .collect();
+
+    let mut doctor_meta = Vec::new();
+
+    for doctor in doctors {
+        if let Some((poly_id, room_code)) = poly_map.get(&doctor.specialization.to_lowercase()) {
+            doctor_meta.push(DoctorPoly {
+                id: doctor.id,
+                poly_id: *poly_id,
+                room_code: room_code.clone(),
+            });
+        } else {
+            warn!(
+                "⚠️ Doctor {} specialization {} has no matching polyclinic",
+                doctor.name, doctor.specialization
+            );
+        }
+    }
 
     let days = vec![
         "Monday",

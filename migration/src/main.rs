@@ -9,7 +9,9 @@ use sea_orm_migration::prelude::*;
 
 #[async_std::main]
 async fn main() {
-    let app_config = AppConfig::from_yaml("application.yaml").expect("Failed to read app config");
+    let app_config = AppConfig::from_yaml("application.yaml")
+        .await
+        .expect("Failed to read app config");
 
     let direct_url = app_config.database.direct_url;
 

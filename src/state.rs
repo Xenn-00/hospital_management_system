@@ -1,4 +1,4 @@
-use std::{fs::read, sync::Arc, time::Duration};
+use std::{sync::Arc, time::Duration};
 
 use aws_config::Region;
 use aws_sdk_s3::{
@@ -33,8 +33,7 @@ pub async fn init_database_connection(url: &str) -> DatabaseConnection {
         .max_connections(50)
         .min_connections(10)
         .connect_timeout(Duration::from_secs(10))
-        .idle_timeout(Duration::from_secs(300))
-        .sqlx_logging(true);
+        .idle_timeout(Duration::from_secs(300));
 
     Database::connect(options)
         .await
@@ -70,9 +69,9 @@ pub async fn init_s3_client(cfg: &S3Config) -> Client {
     Client::from_conf(conf)
 }
 
-pub fn load_jwt_keys() -> Result<JwtKeys, AppError> {
-    let private_key = read("private_key.pem")?;
-    let public_key = read("public_key.pem")?;
+pub async fn load_jwt_keys() -> Result<JwtKeys, AppError> {
+    let private_key = tokio::fs::read("private_key.pem").await?;
+    let public_key = tokio::fs::read("public_key.pem").await?;
 
     Ok(JwtKeys {
         encoding: Arc::new(EncodingKey::from_rsa_pem(&private_key)?),

@@ -9,12 +9,34 @@ use futures::{StreamExt, TryStreamExt};
 use image::ImageReader;
 use rand::Rng;
 use reqwest::Client;
-use serde::de::DeserializeOwned;
+use serde::{Serialize, de::DeserializeOwned};
 use tracing::{error, info};
 
 use crate::error_handling::app_error::AppError;
 
 use redis::AsyncCommands;
+
+pub async fn publish_message<T: Serialize>(
+    redis: &Pool<RedisConnectionManager>,
+    channel: &str,
+    message: T,
+) -> Result<(), AppError> {
+    let mut redis_conn = redis
+        .get()
+        .await
+        .map_err(|_| AppError::Internal("Failed to get Redis connection".to_string()))?;
+    let serialized_message = serde_json::to_string(&message)
+        .map_err(|_| AppError::Internal("Failed to serialize message".to_string()))?;
+
+    redis_conn
+        .publish::<_, _, ()>(channel, serialized_message)
+        .await
+        .map_err(|e| {
+            tracing::error!("Failed to publish message to Redis: {}", e);
+            AppError::Internal("Failed to publish message to Redis".to_string())
+        })?;
+    Ok(())
+}
 
 pub async fn get_cache_data<T: DeserializeOwned>(
     redis: &Pool<RedisConnectionManager>,

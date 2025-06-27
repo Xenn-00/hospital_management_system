@@ -13,7 +13,7 @@ use crate::middleware::rbac_middleware::rbac_staff_only::rbac_staff_only;
 use crate::state::AppState;
 
 pub fn triage_routes(app_state: Arc<AppState>) -> Router<AppState> {
-    Router::with_state(Router::new(), app_state.clone())
+    Router::new()
         .route("/", post(triage_patient))
         .route("/queue/{visit_type}", get(triage_queue))
         .route(

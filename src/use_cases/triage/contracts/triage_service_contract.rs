@@ -6,7 +6,7 @@ use sea_orm::DatabaseConnection;
 
 use crate::{
     dtos::triage::{
-        create_triage_request::{CreateTriageRequest, PaginationQuery},
+        create_triage_request::CreateTriageRequest,
         referral_upload_metadata::ReferralUploadMetadata,
         response::{
             CreateTriageResponse, ReferralUploadResponse, TriagePatientCalled, TriagePatientCancel,
@@ -14,6 +14,7 @@ use crate::{
         },
     },
     error_handling::app_error::AppError,
+    infra::api::PaginationQuery,
 };
 
 #[async_trait]

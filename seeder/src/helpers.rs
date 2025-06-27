@@ -10,7 +10,7 @@ use std::collections::{HashMap, HashSet};
 use entity::{
     department_roles, departments, doctor_schedules, doctors, employee_position, employees, nurses,
     nurses_polyclinic_assignments, polyclinic, position_titles, role, rooms,
-    users::{self, AccountStatus},
+    sea_orm_active_enums::AccountStatus, users,
 };
 use sea_orm::ActiveValue::Set;
 
@@ -42,11 +42,11 @@ pub fn generate_employee(n: usize, superadmin_id: i32) -> Vec<employees::ActiveM
 
     // Department distribution
     let dept_distribution = vec![
-        ("DPT01", 15), // Administrative
+        ("DPT01", 10), // Administrative
         ("DPT02", 2),  // Human Resource
         ("DPT03", 5),  // Finance
         ("DPT04", 5),  // IT
-        ("DPT05", 35), // Clinical
+        ("DPT05", 40), // Clinical
         ("DPT06", 5),  // Emergency
         ("DPT07", 5),  // Procurement
         ("DPT08", 15), // Nursing
@@ -118,38 +118,59 @@ pub fn generate_employee(n: usize, superadmin_id: i32) -> Vec<employees::ActiveM
 }
 
 pub fn generate_doctor(
-    n: i32,
-    mut employees_ids: Vec<i32>,
-    mut rooms: Vec<String>,
+    total_doctor: i32,
+    mut employee_ids: Vec<i32>,
     polyclinics_ids_and_names: Vec<(i32, String)>,
 ) -> Vec<doctors::ActiveModel> {
     let mut rng = rand::rng();
     let mut doctors = Vec::new();
-    for i in 1..=n {
-        if employees_ids.is_empty() || rooms.is_empty() || polyclinics_ids_and_names.is_empty() {
-            warn!("❌ Not enough data to generate more doctors!");
+
+    let mut required_polys = polyclinics_ids_and_names.clone();
+    required_polys.shuffle(&mut rng);
+
+    for (i, (poly_id, specialization)) in required_polys.iter().enumerate() {
+        if employee_ids.is_empty() {
+            warn!("❌ Not enough employees for poly init doctor assign!");
             break;
         }
-        let license_number = format!("LN{:04}", i);
-        let employee_id = *employees_ids.choose(&mut rng).unwrap();
-        employees_ids.retain(|&x| x != employee_id);
 
-        let room = rooms.choose(&mut rng).unwrap().clone();
-        rooms.retain(|r| r != &room);
-
-        let (polyclinic_id, specialization) =
-            polyclinics_ids_and_names.choose(&mut rng).unwrap().clone();
+        let employee_id = employee_ids.pop().unwrap();
+        let license_number = format!("LN{:04}", i + 1);
 
         doctors.push(doctors::ActiveModel {
-            name: Set(format!("Doctor {}", i)),
+            name: Set(format!("Doctor {}", i + 1)),
             employee_id: Set(employee_id),
-            specialization: Set(specialization),
+            specialization: Set(specialization.clone()),
             license_number: Set(license_number),
-            room_code: Set(room),
-            polyclinic_id: Set(polyclinic_id),
+            polyclinic_id: Set(*poly_id),
             ..Default::default()
         });
     }
+
+    let mut doctor_count = doctors.len() as i32;
+
+    while doctor_count < total_doctor {
+        if employee_ids.is_empty() {
+            warn!("❌ No more employee available for doctor assignment!");
+            break;
+        }
+
+        let employee_id = employee_ids.pop().unwrap();
+        let (poly_id, specialization) = polyclinics_ids_and_names.choose(&mut rng).unwrap().clone();
+        let license_number = format!("LN{:04}", doctor_count + 1);
+
+        doctors.push(doctors::ActiveModel {
+            name: Set(format!("Doctor {}", doctor_count + 1)),
+            employee_id: Set(employee_id),
+            specialization: Set(specialization),
+            license_number: Set(license_number),
+            polyclinic_id: Set(poly_id),
+            ..Default::default()
+        });
+
+        doctor_count += 1;
+    }
+
     doctors
 }
 
@@ -267,14 +288,14 @@ pub fn generate_employee_position(
         .collect()
 }
 
-pub struct Doctor {
+pub struct DoctorPoly {
     pub id: i32,
     pub poly_id: i32,
     pub room_code: String,
 }
 
 pub fn generate_doctor_schedules(
-    meta: Vec<Doctor>,
+    meta: Vec<DoctorPoly>,
     days: Vec<&'static str>,
     shifts: Vec<(NaiveTime, NaiveTime)>,
 ) -> Vec<doctor_schedules::ActiveModel> {
@@ -380,7 +401,7 @@ pub fn generate_department_roles(
         ("DPT02", vec!["ADMHR", "HEADDEP"]),
         ("DPT03", vec!["ADMFIN", "CASHIER", "HEADDEP"]),
         ("DPT04", vec!["ADMTECH", "SUPRADM", "HEADDEP"]),
-        ("DPT05", vec!["DOCRGNL", "DOCSPCL", "HEADDEP"]),
+        ("DPT05", vec!["DOCSPCL", "HEADDEP"]),
         ("DPT06", vec!["EMRGNCY", "DOCRGNL", "HEADDEP"]),
         ("DPT07", vec!["PROCSTF", "HEADDEP"]),
         ("DPT08", vec!["NURSE", "HEADDEP"]),
@@ -420,7 +441,7 @@ pub fn generate_users(
             "DPT02" => vec!["ADMHR", "HEADDEP"],                         // Human Resource
             "DPT03" => vec!["ADMFIN", "CASHIER", "HEADDEP"],             // Finance
             "DPT04" => vec!["ADMTECH", "SUPRADM", "HEADDEP"],            // IT
-            "DPT05" => vec!["DOCRGNL", "DOCSPCL", "HEADDEP"],            // Clinical
+            "DPT05" => vec!["DOCSPCL", "HEADDEP"],                       // Clinical
             "DPT06" => vec!["EMRGNCY", "DOCRGNL", "HEADDEP"],            // Emergency
             "DPT07" => vec!["PROCSTF", "HEADDEP"],                       // Procurement
             "DPT08" => vec!["NURSE", "HEADDEP"],                         // Nursing

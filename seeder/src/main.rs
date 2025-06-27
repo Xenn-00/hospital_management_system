@@ -9,7 +9,7 @@ use log::info;
 #[tokio::main]
 async fn main() {
     log4rs::init_file("seeder/seedLog.yaml", Default::default()).unwrap();
-    let app_config = AppConfig::from_yaml("application.yaml").unwrap();
+    let app_config = AppConfig::from_yaml("application.yaml").await.unwrap();
 
     let direct_url = app_config.database.direct_url;
 

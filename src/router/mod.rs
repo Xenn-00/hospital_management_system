@@ -1,2 +1,3 @@
 pub mod administrative;
-pub mod triage_route;
+pub mod medical;
+pub mod patients;

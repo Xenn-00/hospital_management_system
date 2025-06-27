@@ -8,7 +8,7 @@ use crate::{
     dtos::administrative::auth::{
         auth_request::{
             AdminCreateEmployeeAccountRequest, EmployeeRegisterUserRequest, LoginRequest,
-            SetupUserQuery, VerifyOtpRequest,
+            ResendOTPQuery, SetupUserQuery, VerifyOtpRequest,
         },
         auth_response::{
             AdminCreateEmployeeAccountResponse, EmployeeRegisterUserResponse, LoginResponse,
@@ -66,6 +66,33 @@ pub async fn register_handler(
 
     let response = ApiResponse {
         message: "Register user success".to_string(),
+        data: Some(result),
+        request_id: request_id.0.clone(),
+        errors: None,
+    };
+
+    Ok(Json(response))
+}
+
+pub async fn resend_otp(
+    State(state): State<AppState>,
+    Extension(request_id): Extension<RequestId>,
+    Query(query): Query<ResendOTPQuery>,
+) -> Result<Json<ApiResponse<String>>, AppError> {
+    if query.employee_id < 1 {
+        return Err(AppError::BadRequest("Invalid employee ID".to_string()));
+    }
+
+    let db = &state.db;
+    let redis = &state.redis;
+    let twilio = &state.twilio;
+
+    let result =
+        <AuthService as AuthServiceContract>::resend_otp(db, redis, twilio, query.employee_id)
+            .await?;
+
+    let response = ApiResponse {
+        message: "OTP resent successfully".to_string(),
         data: Some(result),
         request_id: request_id.0.clone(),
         errors: None,

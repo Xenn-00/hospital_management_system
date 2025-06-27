@@ -19,4 +19,5 @@ pub mod queue_ticket;
 pub mod referral_documents;
 pub mod role;
 pub mod rooms;
+pub mod sea_orm_active_enums;
 pub mod users;

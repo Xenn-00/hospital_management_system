@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use config::{Config, ConfigError, File};
 use serde::{Deserialize, de::DeserializeOwned};
 use tokio::task_local;
@@ -34,6 +36,7 @@ pub struct DatabaseConfig {
 pub struct RedisConfig {
     pub official_url: String,
     pub upstash_redis_url: String,
+    pub docker_redis_url: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -51,10 +54,19 @@ pub struct Application {
 }
 
 impl AppConfig {
-    pub fn from_yaml(path: &str) -> Result<Self, config::ConfigError> {
-        let builder = Config::builder().add_source(File::with_name(path));
+    pub async fn from_yaml(path: &str) -> Result<Self, config::ConfigError> {
+        let path_owned = path.to_string();
 
-        builder.build()?.try_deserialize()
+        let config = tokio::task::spawn_blocking(move || {
+            Config::builder()
+                .add_source(File::from(Path::new(&path_owned)))
+                .build()?
+                .try_deserialize()
+        })
+        .await
+        .map_err(|e| ConfigError::Message(format!("Join error: {e}")))?; // handle panic-safe
+
+        config
     }
 
     pub fn get_key<T: DeserializeOwned>(path: &str, file: &str) -> Result<T, ConfigError> {

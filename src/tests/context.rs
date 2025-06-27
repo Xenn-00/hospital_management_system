@@ -15,7 +15,7 @@ use bb8_redis::RedisConnectionManager;
 use chrono::{Duration, NaiveDate, Utc};
 use entity::{
     department_roles, departments, employees, patients, patients_visit_intent, queue_ticket, role,
-    users::{self, AccountStatus},
+    sea_orm_active_enums::AccountStatus, users,
 };
 
 use jsonwebtoken::{DecodingKey, EncodingKey};
@@ -73,7 +73,9 @@ pub struct TestContext {
 
 impl TestContext {
     pub async fn new() -> Self {
-        let config = AppConfig::from_yaml("application.yaml").expect("Failed to load config");
+        let config = AppConfig::from_yaml("application.yaml")
+            .await
+            .expect("Failed to load config");
 
         let mut db_opts = ConnectOptions::new(config.database.test_url.clone());
 

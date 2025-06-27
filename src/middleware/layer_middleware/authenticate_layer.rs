@@ -11,7 +11,7 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use tower::{Layer, Service};
-use tracing::{Instrument, debug, info_span};
+use tracing::{Instrument, info_span};
 
 use crate::{error_handling::app_error::AppError, state::AppState, utils::jwt::decode_jwt};
 
@@ -74,8 +74,6 @@ where
                         return Ok(res);
                     }
                 };
-
-                debug!("your token: {:?}", token);
 
                 let claims = match decode_jwt(&token, &jwt_keys) {
                     Ok(c) => c,
